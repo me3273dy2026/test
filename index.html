@@ -2,63 +2,45 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Project Allocation | ME3273</title>
+<title>Project Allocation Login | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  margin:0;height:100vh;
+  display:flex;justify-content:center;align-items:center;
 }
 .card{
-  background:#fff;
-  width:100%;
-  max-width:460px;
-  padding:30px;
+  background:#fff;padding:30px;
+  width:100%;max-width:420px;
   border-radius:14px;
-  box-shadow:0 20px 45px rgba(0,0,0,.25);
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-h1{text-align:center;font-size:20px;color:#203a43;}
-h2{text-align:center;font-size:15px;color:#555;margin-bottom:20px;}
+h1{text-align:center;color:#203a43;font-size:20px;}
+h2{text-align:center;color:#555;font-size:14px;margin-bottom:20px;}
 label{font-weight:600;margin-top:14px;display:block;}
 input{
   width:100%;padding:10px;margin-top:6px;
   border-radius:6px;border:1px solid #ccc;
 }
 button{
-  width:100%;margin-top:24px;padding:12px;
+  width:100%;margin-top:22px;padding:12px;
   border:none;border-radius:30px;
   background:linear-gradient(135deg,#2c5364,#203a43);
   color:#fff;font-size:16px;font-weight:600;
   cursor:pointer;
 }
-button:disabled{background:#999;cursor:not-allowed;}
-.msg{margin-top:16px;text-align:center;font-weight:600;}
+.msg{text-align:center;margin-top:16px;font-weight:600;}
 .register-link{text-align:center;margin-top:12px;font-size:13px;}
 .register-link a{color:#2c5364;text-decoration:none;font-weight:600;}
-.register-link a:hover{text-decoration:underline;}
-#wheelBox{display:none;text-align:center;}
-.wheel{
-  margin:30px auto;width:160px;height:160px;
-  border-radius:50%;border:10px solid #2c5364;
-  display:flex;justify-content:center;align-items:center;
-  font-size:18px;font-weight:700;color:#2c5364;
-}
-.spin{animation:spin 2s ease-out;}
-@keyframes spin{from{transform:rotate(0)}to{transform:rotate(720deg)}}
-.result{text-align:left;margin-top:20px;}
 </style>
 </head>
 
 <body>
-<div class="card">
 
-<div id="loginBox">
+<div class="card" id="loginBox">
   <h1>Project Allocation</h1>
   <h2>Group Discussion & Seminar (ME3273)</h2>
 
@@ -66,9 +48,10 @@ button:disabled{background:#999;cursor:not-allowed;}
   <input id="roll">
 
   <label>Date of Birth</label>
-  <input id="dob" type="date">
+  <input type="date" id="dob">
 
   <button onclick="login()">Login</button>
+
   <div class="msg" id="msg"></div>
 
   <div class="register-link">
@@ -79,24 +62,21 @@ button:disabled{background:#999;cursor:not-allowed;}
   </div>
 </div>
 
-<div id="wheelBox">
+<div class="card" id="wheelBox" style="display:none;text-align:center">
   <h1>Spin the Wheel</h1>
-  <div class="wheel" id="wheel">SPIN</div>
-  <button id="spinBtn" onclick="spin()">Spin Now</button>
-  <div class="result" id="result"></div>
-</div>
-
+  <button id="spinBtn" onclick="spin()">SPIN</button>
+  <div class="msg" id="result"></div>
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgmVHpE-s33gsB1GeG3BeHemfmPpWOOzL_vJMuW3EeaxMAZ1uGcI2HTpA6gGMiH-cFaA/exec";
+const SCRIPT_URL = "PASTE_REDEPLOYED_WEB_APP_URL";
 
 let ROLL="", DOB="";
 
 function login(){
+  const msg=document.getElementById("msg");
   ROLL=document.getElementById("roll").value.trim().toUpperCase();
   DOB=document.getElementById("dob").value;
-  const msg=document.getElementById("msg");
 
   if(!ROLL||!DOB){
     msg.style.color="red";
@@ -109,61 +89,44 @@ function login(){
   fd.append("roll",ROLL);
   fd.append("dob",DOB);
 
-  fetch(SCRIPT_URL, {
-  method: "POST",
-  body: fd
-})
-.then(res => res.json())
-.then(res => {
-
-  if (res.status === "NOT_REGISTERED") {
-    msg.style.color = "red";
-    msg.innerText = "You are not registered. Please register first.";
-    return;
-  }
-
-  if (res.status === "ELIGIBLE") {
-    loginBox.style.display = "none";
-    wheelBox.style.display = "block";
-    return;
-  }
-
-  if (res.status === "ALREADY_ASSIGNED") {
-    showResult(res.projectID, res.teammates);
-  }
-
-})
-.catch(err => {
-  msg.style.color = "red";
-  msg.innerText = "Server error. Please try again.";
-});
+  fetch(SCRIPT_URL,{method:"POST",body:fd})
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="NOT_REGISTERED"){
+      msg.style.color="red";
+      msg.innerText="You are not registered.";
+      return;
+    }
+    if(res.status==="ELIGIBLE"){
+      loginBox.style.display="none";
+      wheelBox.style.display="block";
+    }
+    if(res.status==="ALREADY_ASSIGNED"){
+      showResult(res.projectID,res.teammates);
+    }
+  })
+  .catch(()=>{
+    msg.style.color="red";
+    msg.innerText="Server error. Please try again.";
+  });
 }
 
 function spin(){
   spinBtn.disabled=true;
-  wheel.classList.add("spin");
-
   const fd=new URLSearchParams();
   fd.append("action","spin");
   fd.append("roll",ROLL);
   fd.append("dob",DOB);
 
-  setTimeout(()=>{
-    fetch(SCRIPT_URL,{method:"POST",body:fd})
-    .then(r=>r.json())
-    .then(res=>{
-      showResult(res.project,res.teammates);
-    });
-  },2000);
+  fetch(SCRIPT_URL,{method:"POST",body:fd})
+  .then(r=>r.json())
+  .then(res=>{
+    showResult(res.project,res.teammates);
+  });
 }
 
 function showResult(project,team){
-  loginBox.style.display="none";
-  wheelBox.style.display="block";
-  spinBtn.disabled=true;
-
-  let html=`<b>Assigned Project:</b> ${project}<br><br>
-            <b>Students in this project:</b><br>`;
+  let html=`<b>Assigned Project:</b> ${project}<br><br>`;
   team.forEach((s,i)=>{
     html+=`${i+1}. ${s.name} (${s.roll})<br>`;
   });
