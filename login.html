@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login | ME3273</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  margin:0;height:100vh;
+  display:flex;justify-content:center;align-items:center;
+}
+.card{
+  background:#fff;
+  width:100%;
+  max-width:400px;
+  padding:30px;
+  border-radius:14px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+h1{text-align:center;color:#203a43;font-size:20px;}
+label{font-weight:600;margin-top:14px;display:block;}
+input{
+  width:100%;padding:10px;margin-top:6px;
+  border-radius:6px;border:1px solid #ccc;
+}
+button{
+  width:100%;margin-top:22px;padding:12px;
+  border:none;border-radius:30px;
+  background:linear-gradient(135deg,#2c5364,#203a43);
+  color:#fff;font-size:16px;font-weight:600;
+  cursor:pointer;
+}
+.msg{
+  margin-top:16px;
+  text-align:center;
+  font-weight:600;
+}
+.register{
+  text-align:center;
+  margin-top:12px;
+  font-size:13px;
+}
+.register a{
+  color:#2c5364;
+  text-decoration:none;
+  font-weight:600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>ME3273 Login</h1>
+
+  <label>Roll Number</label>
+  <input id="roll">
+
+  <label>Date of Birth</label>
+  <input type="date" id="dob">
+
+  <button onclick="login()">Login</button>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="register">
+    Not registered?
+    <a href="https://me3273dy2026.github.io/Reg/" target="_blank">
+      Register here
+    </a>
+  </div>
+</div>
+
+<script>
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzVQr5XUEduMU-A_pTjE9RRtfEQzeCROOrYt5f2Qhnkf8wiwKzIFzQ-S_AxiyvuLaqdsg/exec";
+
+function login(){
+
+  const roll = document.getElementById("roll").value.trim().toUpperCase();
+  const dob  = document.getElementById("dob").value;
+  const msg  = document.getElementById("msg");
+
+  msg.innerText = "";
+
+  if(!roll || !dob){
+    msg.style.color = "red";
+    msg.innerText = "Enter Roll Number and DOB";
+    return;
+  }
+
+  fetch(BACKEND_URL, {
+    method: "POST",
+    body: new URLSearchParams({
+      roll: roll,
+      dob: dob
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.status === "LOGIN_OK"){
+      msg.style.color = "green";
+      msg.innerText = "Login successful ✅";
+    } else if(res.status === "NOT_REGISTERED"){
+      msg.style.color = "red";
+      msg.innerText = "Not registered";
+    } else {
+      msg.style.color = "red";
+      msg.innerText = "Unexpected response";
+    }
+  })
+  .catch(() => {
+    msg.style.color = "red";
+    msg.innerText = "Server error";
+  });
+}
+</script>
+
+</body>
+</html>
