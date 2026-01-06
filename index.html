@@ -109,22 +109,34 @@ function login(){
   fd.append("roll",ROLL);
   fd.append("dob",DOB);
 
-  fetch(SCRIPT_URL,{method:"POST",body:fd})
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status==="NOT_REGISTERED"){
-      msg.style.color="red";
-      msg.innerText="You are not registered. Please register first.";
-      return;
-    }
-    if(res.status==="ELIGIBLE"){
-      loginBox.style.display="none";
-      wheelBox.style.display="block";
-    }
-    if(res.status==="ALREADY_ASSIGNED"){
-      showResult(res.projectID,res.teammates);
-    }
-  });
+  fetch(SCRIPT_URL, {
+  method: "POST",
+  body: fd
+})
+.then(res => res.json())
+.then(res => {
+
+  if (res.status === "NOT_REGISTERED") {
+    msg.style.color = "red";
+    msg.innerText = "You are not registered. Please register first.";
+    return;
+  }
+
+  if (res.status === "ELIGIBLE") {
+    loginBox.style.display = "none";
+    wheelBox.style.display = "block";
+    return;
+  }
+
+  if (res.status === "ALREADY_ASSIGNED") {
+    showResult(res.projectID, res.teammates);
+  }
+
+})
+.catch(err => {
+  msg.style.color = "red";
+  msg.innerText = "Server error. Please try again.";
+});
 }
 
 function spin(){
