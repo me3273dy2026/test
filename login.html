@@ -75,7 +75,8 @@ button{
 </div>
 
 <script>
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzVQr5XUEduMU-A_pTjE9RRtfEQzeCROOrYt5f2Qhnkf8wiwKzIFzQ-S_AxiyvuLaqdsg/exec";
+const BACKEND_URL =
+  "https://script.google.com/macros/s/AKfycbwo6QTAp6Pu2IOKLzs2L4K9_g12yflElfzokvT-xJOmqJU4vGPBPPP6mmMp3u2lqbKM1A/exec";
 
 function login(){
 
@@ -101,14 +102,13 @@ function login(){
   .then(r => r.json())
   .then(res => {
     if(res.status === "LOGIN_OK"){
-      msg.style.color = "green";
-      msg.innerText = "Login successful ✅";
-    } else if(res.status === "NOT_REGISTERED"){
-      msg.style.color = "red";
-      msg.innerText = "Not registered";
+      // redirect to next page (STEP E)
+      window.location.href =
+        "allocate.html?roll=" + encodeURIComponent(roll) +
+        "&dob=" + encodeURIComponent(dob);
     } else {
       msg.style.color = "red";
-      msg.innerText = "Unexpected response";
+      msg.innerText = "Not registered";
     }
   })
   .catch(() => {
