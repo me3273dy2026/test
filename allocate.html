@@ -312,16 +312,24 @@ function saveTopic(){
 
 /* ---------- LOGOUT ---------- */
 function logout(){
+  // Disable everything + show message
   disableAllActions("Logging out, please wait…");
-  requestAnimationFrame(()=>{
-    setTimeout(()=>{
-      fetch(BACKEND,{
-        method:"POST",
-        body:new URLSearchParams({ action:"logout", token })
-      }).finally(()=>{
-        location.href="login.html";
-      });
-    },400);
+
+  // Force browser repaint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+
+      // Now browser has painted the message
+      setTimeout(() => {
+        fetch(BACKEND, {
+          method: "POST",
+          body: new URLSearchParams({ action: "logout", token })
+        }).finally(() => {
+          location.href = "login.html";
+        });
+      }, 800);   // 👈 enough time to visibly show message
+
+    });
   });
 }
 </script>
