@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* ===== EXISTING STYLES (UNCHANGED) ===== */
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
@@ -16,6 +15,8 @@ body{
   flex-direction:column;
   align-items:center;
 }
+
+/* CARD */
 .card{
   background:#fff;
   width:100%;
@@ -25,8 +26,19 @@ body{
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
+
 h1{font-size:16px;text-align:center;color:#203a43;margin:0;}
 h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
+
+/* LOADING */
+#loading{
+  text-align:center;
+  font-size:15px;
+  color:#555;
+  margin:30px 0;
+}
+
+/* COUNTDOWN */
 .countdown{
   background:#fff8e1;
   color:#6d4c41;
@@ -36,6 +48,8 @@ h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
   font-size:14px;
   font-weight:600;
 }
+
+/* BLINKING MESSAGE */
 .blink{
   text-align:center;
   font-size:14px;
@@ -49,8 +63,12 @@ h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
   75%{color:#e67e22;}
   100%{color:#1abc9c;}
 }
+
+/* WHEEL */
 #wheelWrap{display:flex;justify-content:center;margin:18px 0;}
 canvas{max-width:260px}
+
+/* BUTTONS */
 button{
   width:100%;
   padding:12px;
@@ -65,10 +83,14 @@ button{
 .btn-seminar{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;}
 .btn-logout{background:#c0392b;color:#fff;}
 button:disabled{background:#999;cursor:not-allowed}
+
+/* STATUS */
 .status{margin-top:12px;text-align:center;font-size:14px}
 .yellow{color:#f57f17;}
 .green{color:#1b5e20;}
 .red{color:#b71c1c;}
+
+/* INFO BOX */
 .infoBox{
   background:#f5f7fa;
   border-radius:12px;
@@ -76,6 +98,8 @@ button:disabled{background:#999;cursor:not-allowed}
   margin-top:16px;
   font-size:14px;
 }
+
+/* FOOTER */
 .footer{
   margin:12px 0 20px;
   text-align:center;
@@ -85,7 +109,8 @@ button:disabled{background:#999;cursor:not-allowed}
 
 /* MODAL */
 .modal{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   background:rgba(0,0,0,.6);
   display:none;
   justify-content:center;
@@ -118,25 +143,32 @@ textarea{
   <h1 id="welcome">Welcome</h1>
   <h2>Group Discussion & Seminar (ME3273)</h2>
 
-  <div class="countdown">
-    ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
+  <div id="loading">Loading, please wait…</div>
+
+  <!-- DECISION-CONTROLLED CONTENT -->
+  <div id="content" style="display:none">
+
+    <div class="countdown">
+      ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
+    </div>
+
+    <div id="spinMsg" class="blink">
+      Spin the coin to get your topic name for group discussion
+    </div>
+
+    <div id="wheelWrap">
+      <canvas id="wheel" width="260" height="260"></canvas>
+    </div>
+
+    <button id="spinBtn" class="btn-primary" onclick="spin()">Spin the Coin</button>
+
+    <div id="status" class="status"></div>
+    <div id="resultBox" class="infoBox" style="display:none"></div>
+
+    <button class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
+    <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
+
   </div>
-
-  <div class="blink" id="spinMsg">
-    Spin the coin to get your topic name for group discussion
-  </div>
-
-  <div id="wheelWrap">
-    <canvas id="wheel" width="260" height="260"></canvas>
-  </div>
-
-  <button id="spinBtn" class="btn-primary" onclick="spin()">Spin the Coin</button>
-
-  <div id="status" class="status"></div>
-  <div id="resultBox" class="infoBox" style="display:none"></div>
-
-  <button class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
-  <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
 
 </div>
 
@@ -145,7 +177,7 @@ textarea{
   <div>© 2026 · IIEST Shibpur</div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL (unchanged) -->
 <div class="modal" id="modal">
   <div class="modal-box">
     <h3>Seminar Topic</h3>
@@ -162,54 +194,38 @@ textarea{
 </div>
 
 <script>
-/* ========= CONFIG ========= */
-const BACKEND = "https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
-const token = new URLSearchParams(location.search).get("token");
+const BACKEND="PASTE_BACKEND_URL_HERE";
+const token=new URLSearchParams(location.search).get("token");
 
-/* ========= STATE ========= */
-let DEADLINE=null, timer=null;
 let angle=0, spinning=false;
+let DEADLINE=null, timer=null;
 
-/* ========= DRAW WHEEL ========= */
+/* INITIALIZE */
 drawWheel();
+loadAll();
 
-/* ========= INITIAL LOAD ========= */
-loadDashboard();        // 🔴 NEW FIX (IMPORTANT)
-loadSeminarInfo();     // existing logic
+/* MASTER LOADER */
+function loadAll(){
+  Promise.all([
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getSeminarTopic",token})}).then(r=>r.json())
+  ]).then(([dash, sem])=>{
+    loading.style.display="none";
+    content.style.display="block";
 
-/* ========= DASHBOARD CHECK ========= */
-function loadDashboard(){
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({ action:"dashboard", token })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status==="ASSIGNED"){
-      // Hide spin UI completely
+    topicInput.value=sem.topic||"";
+    startCountdown(sem.deadline);
+
+    if(dash.status==="ASSIGNED"){
       wheelWrap.style.display="none";
       spinBtn.style.display="none";
       spinMsg.style.display="none";
-
-      // Show assigned info
-      showResult(res);
+      showResult(dash);
     }
   });
 }
 
-/* ========= SEMINAR INFO ========= */
-function loadSeminarInfo(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"getSeminarTopic",token
-  })})
-  .then(r=>r.json())
-  .then(res=>{
-    topicInput.value=res.topic||"";
-    startCountdown(res.deadline);
-  });
-}
-
-/* ========= COUNTDOWN ========= */
+/* COUNTDOWN */
 function startCountdown(d){
   DEADLINE=new Date(d);
   timer=setInterval(()=>{
@@ -228,7 +244,22 @@ function startCountdown(d){
   },1000);
 }
 
-/* ========= SPIN ========= */
+/* WHEEL */
+function drawWheel(){
+  const c=wheel.getContext("2d");
+  c.clearRect(0,0,260,260);
+  for(let i=0;i<9;i++){
+    c.beginPath();
+    c.moveTo(130,130);
+    c.fillStyle=i%2?"#90caf9":"#bbdefb";
+    c.arc(130,130,120,
+      (i*40+angle)*Math.PI/180,
+      ((i+1)*40+angle)*Math.PI/180);
+    c.fill();
+  }
+}
+
+/* SPIN */
 function spin(){
   if(spinning) return;
   spinning=true;
@@ -248,9 +279,7 @@ function spin(){
 }
 
 function allocate(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"assign",token
-  })})
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"assign",token})})
   .then(r=>r.json())
   .then(res=>{
     status.innerText="";
@@ -260,7 +289,7 @@ function allocate(){
   });
 }
 
-/* ========= SHOW RESULT ========= */
+/* RESULT */
 function showResult(res){
   let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
   res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
@@ -273,22 +302,7 @@ function showResult(res){
   resultBox.style.display="block";
 }
 
-/* ========= WHEEL DRAW ========= */
-function drawWheel(){
-  const c=wheel.getContext("2d");
-  c.clearRect(0,0,260,260);
-  for(let i=0;i<9;i++){
-    c.beginPath();
-    c.moveTo(130,130);
-    c.fillStyle=i%2?"#90caf9":"#bbdefb";
-    c.arc(130,130,120,
-      (i*40+angle)*Math.PI/180,
-      ((i+1)*40+angle)*Math.PI/180);
-    c.fill();
-  }
-}
-
-/* ========= SEMINAR MODAL ========= */
+/* SEMINAR */
 function openModal(){
   topicStatus.innerText="";
   saveBtn.disabled=false;
@@ -303,22 +317,15 @@ function saveTopic(){
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({
     action:"saveSeminarTopic",token,topic:topicInput.value
   })})
-  .then(r=>r.json())
-  .then(()=>{
-    topicStatus.className="status green";
-    topicStatus.innerText="Saved successfully";
-    closeBtn.disabled=false;
-  });
+  .then(()=>{topicStatus.className="status green";topicStatus.innerText="Saved successfully";closeBtn.disabled=false;});
 }
 
-/* ========= LOGOUT ========= */
+/* LOGOUT */
 function logout(){
   logoutBtn.disabled=true;
   status.className="status yellow";
   status.innerText="Logging out, please wait…";
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"logout",token
-  })})
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
   .finally(()=>location.href="login.html");
 }
 </script>
