@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Student Page | ME3273</title>
+<title>Topic Allocation | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -14,7 +14,7 @@ body{
   display:flex;
   justify-content:center;
 }
-.main-card{
+.card{
   background:#ffffff;
   width:100%;
   max-width:650px;
@@ -35,6 +35,9 @@ body{
   color:#666;
   margin-bottom:18px;
 }
+.section{
+  margin-top:18px;
+}
 .info-box{
   background:#f7f9fb;
   border-left:5px solid #2c5364;
@@ -53,21 +56,9 @@ body{
   font-size:15px;
   color:#222;
 }
-.members{
-  line-height:1.6;
-}
-.status-box{
-  background:#fff3cd;
-  border-left:5px solid #f1c40f;
-  padding:12px 14px;
-  border-radius:10px;
-  font-size:14px;
-  font-weight:600;
-  color:#856404;
-}
 #wheel{
-  width:230px;height:230px;
-  margin:18px auto;
+  width:220px;height:220px;
+  margin:20px auto;
   border-radius:50%;
   border:6px solid #203a43;
   background:conic-gradient(
@@ -95,7 +86,7 @@ button{
   cursor:pointer;
 }
 .logout{
-  margin-top:22px;
+  margin-top:25px;
   text-align:center;
 }
 .logout button{
@@ -107,19 +98,17 @@ button{
   font-size:12px;
   color:#777;
 }
-.footer div{
-  margin-top:2px;
-}
+.footer div{margin-top:2px;}
 </style>
 </head>
 
 <body>
 
-<div class="main-card">
-  <div id="header" class="header">Loading…</div>
+<div class="card">
+  <div class="header">Welcome</div>
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
 
-  <div id="content">Loading…</div>
+  <div id="content"></div>
 
   <div class="logout">
     <button onclick="logout()">Logout</button>
@@ -138,17 +127,28 @@ const BACKEND_URL =
 
 const token = new URLSearchParams(window.location.search).get("token");
 const content = document.getElementById("content");
-const header  = document.getElementById("header");
 
 /* ================= INIT ================= */
 if(!token){
   content.innerHTML="<b>Invalid session. Please login again.</b>";
-} else {
-  loadDashboard();
+}else{
+  showWheel();        // ALWAYS show wheel first
+  checkAssignment(); // THEN check backend
 }
 
-/* ================= DASHBOARD ================= */
-function loadDashboard(){
+/* ================= SHOW WHEEL ================= */
+function showWheel(){
+  content.innerHTML=`
+    <div id="pointer"></div>
+    <div id="wheel"></div>
+    <div class="center section">
+      <button onclick="spin()">SPIN & ASSIGN TOPIC</button>
+    </div>
+  `;
+}
+
+/* ================= CHECK ASSIGNMENT ================= */
+function checkAssignment(){
   fetch(BACKEND_URL,{
     method:"POST",
     body:new URLSearchParams({
@@ -158,49 +158,21 @@ function loadDashboard(){
   })
   .then(r=>r.json())
   .then(res=>{
-    console.log("Dashboard:", res);
-
-    if(res.status==="NOT_ASSIGNED"){
-      header.innerText="Welcome!";
-      showWheel();
-      return;
+    if(res.status==="ASSIGNED" && res.project && res.team){
+      showAssigned(res.project, res.team);
     }
-
-    if(res.status==="ASSIGNED"){
-      showDetails(
-        res.name || "",
-        res.roll || "",
-        res.project,
-        res.team || [],
-        res.complete === false ? false : true
-      );
-      return;
-    }
-
-    content.innerHTML="<b>Session expired. Please login again.</b>";
   })
-  .catch(()=>{
-    content.innerHTML="<b>Server error. Please refresh.</b>";
-  });
+  .catch(()=>{});
 }
 
-/* ================= WHEEL ================= */
-function showWheel(){
-  content.innerHTML=`
-    <div id="pointer"></div>
-    <div id="wheel"></div>
-    <div class="center">
-      <button onclick="spin()">SPIN & ASSIGN TOPIC</button>
-    </div>
-  `;
-}
-
+/* ================= SPIN ================= */
 function spin(){
   const wheel=document.getElementById("wheel");
-  wheel.style.transform=\`rotate(\${360*6+Math.random()*360}deg)\`;
+  wheel.style.transform=`rotate(${360*6+Math.random()*360}deg)`;
   setTimeout(assignTopic,4200);
 }
 
+/* ================= ASSIGN ================= */
 function assignTopic(){
   fetch(BACKEND_URL,{
     method:"POST",
@@ -211,23 +183,15 @@ function assignTopic(){
   })
   .then(r=>r.json())
   .then(res=>{
-    showDetails("", "", res.project, res.team || [], res.complete);
+    if(res.project && res.team){
+      showAssigned(res.project, res.team);
+    }
   });
 }
 
-/* ================= DETAILS ================= */
-function showDetails(name, roll, topic, team, complete){
-
-  if(!team || team.length===0){
-    content.innerHTML="<b>Data error. Please refresh.</b>";
-    return;
-  }
-
-  const me = team.find(s => s.roll === roll) || team[0];
-
-  header.innerText = `Welcome ${name || me.name} (${roll || me.roll})`;
-
-  let html = `
+/* ================= SHOW ASSIGNED ================= */
+function showAssigned(topic, team){
+  let html=`
     <div class="info-box">
       <div class="info-title">Assigned Topic</div>
       <div class="info-content">${topic}</div>
@@ -235,22 +199,12 @@ function showDetails(name, roll, topic, team, complete){
 
     <div class="info-box">
       <div class="info-title">Group Members</div>
-      <div class="info-content members">
+      <div class="info-content">
         ${team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>")}
       </div>
     </div>
   `;
-
-  if(complete === false){
-    html += `
-      <div class="status-box">
-        ⏳ A few students haven't spun the wheel yet.
-        Please login later to see full group details.
-      </div>
-    `;
-  }
-
-  content.innerHTML = html;
+  content.innerHTML=html;
 }
 
 /* ================= LOGOUT ================= */
@@ -261,7 +215,7 @@ function logout(){
       action:"logout",
       token:token
     })
-  }).then(()=>{
+  }).finally(()=>{
     location.href="login.html";
   });
 }
