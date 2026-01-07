@@ -15,8 +15,6 @@ body{
   flex-direction:column;
   align-items:center;
 }
-
-/* CARD */
 .card{
   background:#fff;
   width:100%;
@@ -26,112 +24,57 @@ body{
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-
 h1{font-size:16px;text-align:center;color:#203a43;margin:0;}
 h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
-
-/* LOADING */
-#loading{
-  text-align:center;
-  font-size:15px;
-  color:#555;
-  margin:30px 0;
-}
-
-/* COUNTDOWN */
+#loading{text-align:center;font-size:15px;color:#555;margin:30px 0;}
 .countdown{
-  background:#fff8e1;
-  color:#6d4c41;
-  padding:10px;
-  border-radius:10px;
-  text-align:center;
-  font-size:14px;
-  font-weight:600;
+  background:#fff8e1;color:#6d4c41;padding:10px;
+  border-radius:10px;text-align:center;font-size:14px;font-weight:600;
 }
-
-/* BLINKING MESSAGE */
 .blink{
-  text-align:center;
-  font-size:14px;
-  margin:12px 0;
+  text-align:center;font-size:14px;margin:12px 0;
   animation:blinkColors 2s infinite;
 }
 @keyframes blinkColors{
-  0%{color:#1abc9c;}
-  25%{color:#3498db;}
-  50%{color:#9b59b6;}
-  75%{color:#e67e22;}
+  0%{color:#1abc9c;}25%{color:#3498db;}
+  50%{color:#9b59b6;}75%{color:#e67e22;}
   100%{color:#1abc9c;}
 }
-
-/* WHEEL */
 #wheelWrap{display:flex;justify-content:center;margin:18px 0;}
 canvas{max-width:260px}
-
-/* BUTTONS */
 button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:30px;
-  font-size:15px;
-  font-weight:600;
-  cursor:pointer;
-  margin-top:12px;
+  width:100%;padding:12px;border:none;border-radius:30px;
+  font-size:15px;font-weight:600;cursor:pointer;margin-top:12px;
 }
 .btn-primary{background:linear-gradient(135deg,#2c5364,#203a43);color:#fff;}
 .btn-seminar{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;}
 .btn-logout{background:#c0392b;color:#fff;}
 button:disabled{background:#999;cursor:not-allowed}
-
-/* STATUS */
 .status{margin-top:12px;text-align:center;font-size:14px}
 .yellow{color:#f57f17;}
 .green{color:#1b5e20;}
 .red{color:#b71c1c;}
-
-/* INFO BOX */
 .infoBox{
-  background:#f5f7fa;
-  border-radius:12px;
-  padding:14px;
-  margin-top:16px;
-  font-size:14px;
+  background:#f5f7fa;border-radius:12px;
+  padding:14px;margin-top:16px;font-size:14px;
 }
-
-/* FOOTER */
 .footer{
-  margin:12px 0 20px;
-  text-align:center;
-  font-size:13px;
-  color:#e0e0e0;
+  margin:12px 0 20px;text-align:center;
+  font-size:13px;color:#e0e0e0;
 }
-
-/* MODAL */
 .modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
-  display:none;
-  justify-content:center;
-  align-items:center;
+  position:fixed;inset:0;background:rgba(0,0,0,.6);
+  display:none;justify-content:center;align-items:center;
 }
 .modal-box{
-  background:#fff;
-  width:90%;
-  max-width:420px;
-  border-radius:14px;
-  padding:22px;
+  background:#fff;width:90%;max-width:420px;
+  border-radius:14px;padding:22px;
 }
 textarea{
-  width:100%;min-height:90px;
-  padding:10px;border-radius:8px;border:1px solid #ccc;
+  width:100%;min-height:90px;padding:10px;
+  border-radius:8px;border:1px solid #ccc;
 }
-.instruction{
-  margin-top:8px;
-  font-size:13px;
-  color:#b71c1c;
-}
+.instruction{margin-top:8px;font-size:13px;color:#b71c1c;}
 .modal-actions{display:flex;gap:10px;margin-top:14px;}
 </style>
 </head>
@@ -139,15 +82,12 @@ textarea{
 <body>
 
 <div class="card">
-
   <h1 id="welcome">Welcome</h1>
   <h2>Group Discussion & Seminar (ME3273)</h2>
 
   <div id="loading">Loading, please wait…</div>
 
-  <!-- DECISION-CONTROLLED CONTENT -->
   <div id="content" style="display:none">
-
     <div class="countdown">
       ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
     </div>
@@ -165,11 +105,9 @@ textarea{
     <div id="status" class="status"></div>
     <div id="resultBox" class="infoBox" style="display:none"></div>
 
-    <button class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
-    <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
-
+    <button id="seminarBtn" class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
+    <button id="logoutBtn" class="btn-logout" onclick="logout()">Logout</button>
   </div>
-
 </div>
 
 <div class="footer">
@@ -177,7 +115,6 @@ textarea{
   <div>© 2026 · IIEST Shibpur</div>
 </div>
 
-<!-- MODAL (unchanged) -->
 <div class="modal" id="modal">
   <div class="modal-box">
     <h3>Seminar Topic</h3>
@@ -194,22 +131,29 @@ textarea{
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
-const token=new URLSearchParams(location.search).get("token");
+const BACKEND = "https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
+const token = new URLSearchParams(location.search).get("token");
 
-let angle=0, spinning=false;
-let DEADLINE=null, timer=null;
+let angle=0, spinning=false, DEADLINE=null;
 
-/* INITIALIZE */
+/* ---------- GLOBAL LOCK ---------- */
+function disableAllActions(msg){
+  spinBtn.disabled=true;
+  logoutBtn.disabled=true;
+  seminarBtn.disabled=true;
+  status.className="status yellow";
+  status.innerText=msg;
+}
+
+/* ---------- INIT ---------- */
 drawWheel();
 loadAll();
 
-/* MASTER LOADER */
 function loadAll(){
   Promise.all([
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getSeminarTopic",token})}).then(r=>r.json())
-  ]).then(([dash, sem])=>{
+  ]).then(([dash,sem])=>{
     loading.style.display="none";
     content.style.display="block";
 
@@ -225,10 +169,10 @@ function loadAll(){
   });
 }
 
-/* COUNTDOWN */
+/* ---------- COUNTDOWN ---------- */
 function startCountdown(d){
   DEADLINE=new Date(d);
-  timer=setInterval(()=>{
+  setInterval(()=>{
     const diff=DEADLINE-new Date();
     if(diff<=0){
       timeLeft.innerText="Deadline passed";
@@ -244,7 +188,7 @@ function startCountdown(d){
   },1000);
 }
 
-/* WHEEL */
+/* ---------- WHEEL ---------- */
 function drawWheel(){
   const c=wheel.getContext("2d");
   c.clearRect(0,0,260,260);
@@ -259,13 +203,11 @@ function drawWheel(){
   }
 }
 
-/* SPIN */
+/* ---------- SPIN ---------- */
 function spin(){
   if(spinning) return;
   spinning=true;
-  spinBtn.disabled=true;
-  status.className="status yellow";
-  status.innerText="Allocating group topic, please wait…";
+  disableAllActions("Allocating group topic, please wait…");
 
   let stop=Math.random()*360+2160;
   let id=setInterval(()=>{
@@ -289,7 +231,7 @@ function allocate(){
   });
 }
 
-/* RESULT */
+/* ---------- RESULT ---------- */
 function showResult(res){
   let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
   res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
@@ -302,7 +244,7 @@ function showResult(res){
   resultBox.style.display="block";
 }
 
-/* SEMINAR */
+/* ---------- SEMINAR ---------- */
 function openModal(){
   topicStatus.innerText="";
   saveBtn.disabled=false;
@@ -317,14 +259,16 @@ function saveTopic(){
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({
     action:"saveSeminarTopic",token,topic:topicInput.value
   })})
-  .then(()=>{topicStatus.className="status green";topicStatus.innerText="Saved successfully";closeBtn.disabled=false;});
+  .then(()=>{
+    topicStatus.className="status green";
+    topicStatus.innerText="Saved successfully";
+    closeBtn.disabled=false;
+  });
 }
 
-/* LOGOUT */
+/* ---------- LOGOUT ---------- */
 function logout(){
-  logoutBtn.disabled=true;
-  status.className="status yellow";
-  status.innerText="Logging out, please wait…";
+  disableAllActions("Logging out, please wait…");
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
   .finally(()=>location.href="login.html");
 }
