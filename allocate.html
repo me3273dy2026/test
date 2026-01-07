@@ -24,7 +24,7 @@ body{
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-h1{font-size:16px;text-align:center;color:#203a43;margin:0;}
+h1{font-size:15px;text-align:center;color:#203a43;margin:0;}
 h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
 #loading{text-align:center;font-size:15px;color:#555;margin:30px 0;}
 .countdown{
@@ -134,55 +134,55 @@ textarea{
 const BACKEND = "https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
 const token = new URLSearchParams(location.search).get("token");
 
-let angle=0, spinning=false, DEADLINE=null;
+let angle=0, spinning=false;
 
 /* ---------- GLOBAL LOCK ---------- */
-function disableAllActions(msg){
-  spinBtn.disabled=true;
-  logoutBtn.disabled=true;
-  seminarBtn.disabled=true;
-  status.className="status yellow";
-  status.innerText=msg;
+function disableAllActions(message){
+  spinBtn.disabled = true;
+  logoutBtn.disabled = true;
+  seminarBtn.disabled = true;
+  status.className = "status yellow";
+  status.innerText = message;
 }
 
 /* ---------- INIT ---------- */
 drawWheel();
-loadAll();
+loadDashboard();
 
-function loadAll(){
-  Promise.all([
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getSeminarTopic",token})}).then(r=>r.json())
-  ]).then(([dash,sem])=>{
+/* ---------- LOAD DASHBOARD ---------- */
+function loadDashboard(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"dashboard", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
     loading.style.display="none";
     content.style.display="block";
 
-    topicInput.value=sem.topic||"";
-    startCountdown(sem.deadline);
-
-    if(dash.status==="ASSIGNED"){
+    if(res.status === "ASSIGNED"){
       wheelWrap.style.display="none";
       spinBtn.style.display="none";
       spinMsg.style.display="none";
-      showResult(dash);
+      showResult(res);
     }
   });
 }
 
-/* ---------- COUNTDOWN ---------- */
-function startCountdown(d){
-  DEADLINE=new Date(d);
+/* ---------- COUNTDOWN (OPTIONAL IF YOU ALREADY HAVE) ---------- */
+function startCountdown(deadline){
+  const D=new Date(deadline);
   setInterval(()=>{
-    const diff=DEADLINE-new Date();
-    if(diff<=0){
+    const d=D-new Date();
+    if(d<=0){
       timeLeft.innerText="Deadline passed";
       spinBtn.style.display="none";
       saveBtn.disabled=true;
       return;
     }
-    const h=Math.floor(diff/36e5),
-          m=Math.floor(diff%36e5/6e4),
-          s=Math.floor(diff%6e4/1e3);
+    const h=Math.floor(d/36e5),
+          m=Math.floor(d%36e5/6e4),
+          s=Math.floor(d%6e4/1e3);
     timeLeft.innerText=
       `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
   },1000);
@@ -206,22 +206,32 @@ function drawWheel(){
 /* ---------- SPIN ---------- */
 function spin(){
   if(spinning) return;
-  spinning=true;
+  spinning = true;
+
   disableAllActions("Allocating group topic, please wait…");
 
-  let stop=Math.random()*360+2160;
-  let id=setInterval(()=>{
-    angle+=20;
+  let stop = Math.random()*360 + 2160;
+  let id = setInterval(()=>{
+    angle += 20;
     drawWheel();
-    if(angle>=stop){
+    if(angle >= stop){
       clearInterval(id);
+
+      // NEW MESSAGE DURING BACKEND CALL
+      status.className="status yellow";
+      status.innerText="Assigning topic, please wait…";
+
       allocate();
     }
   },30);
 }
 
+/* ---------- ASSIGN ---------- */
 function allocate(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"assign",token})})
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"assign", token })
+  })
   .then(r=>r.json())
   .then(res=>{
     status.innerText="";
@@ -233,7 +243,7 @@ function allocate(){
 
 /* ---------- RESULT ---------- */
 function showResult(res){
-  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
+  let html=`<b>Assigned Topic:</b><br>${res.project}<br><br><b>Group Members:</b><br>`;
   res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
   if(!res.complete){
     html+=`<div class="red" style="margin-top:8px">
@@ -242,6 +252,10 @@ function showResult(res){
   }
   resultBox.innerHTML=html;
   resultBox.style.display="block";
+
+  // RE-ENABLE ALLOWED ACTIONS
+  seminarBtn.disabled = false;
+  logoutBtn.disabled = false;
 }
 
 /* ---------- SEMINAR ---------- */
@@ -256,9 +270,14 @@ function saveTopic(){
   saveBtn.disabled=true;
   topicStatus.className="status yellow";
   topicStatus.innerText="Submitting…";
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"saveSeminarTopic",token,topic:topicInput.value
-  })})
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveSeminarTopic",
+      token,
+      topic:topicInput.value
+    })
+  })
   .then(()=>{
     topicStatus.className="status green";
     topicStatus.innerText="Saved successfully";
@@ -269,8 +288,16 @@ function saveTopic(){
 /* ---------- LOGOUT ---------- */
 function logout(){
   disableAllActions("Logging out, please wait…");
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
-  .finally(()=>location.href="login.html");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"logout", token })
+  })
+  .finally(()=>{
+    setTimeout(()=>{
+      location.href="login.html";
+    },800);
+  });
 }
 </script>
 
