@@ -27,47 +27,35 @@ body{
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
 
-/* ---------- HEADINGS ---------- */
-h1{
-  font-size:18px;
-  margin:0 0 6px;
-  color:#203a43;
+h1{font-size:17px;text-align:center;color:#203a43;margin:0;}
+h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
+
+.info{
   text-align:center;
-}
-h2{
   font-size:14px;
-  margin:0 0 16px;
+  margin-bottom:10px;
   color:#555;
-  text-align:center;
 }
 
 /* ---------- COUNTDOWN ---------- */
 .countdown{
-  margin:10px auto 18px;
-  padding:10px 14px;
-  text-align:center;
   background:#fff8e1;
   color:#6d4c41;
+  padding:10px;
   border-radius:10px;
+  text-align:center;
   font-size:14px;
   font-weight:600;
 }
 
 /* ---------- WHEEL ---------- */
-#wheelWrap{
-  display:flex;
-  justify-content:center;
-  margin:18px 0;
-}
-canvas{
-  max-width:260px;
-}
+#wheelWrap{display:flex;justify-content:center;margin:18px 0;}
+canvas{max-width:260px}
 
 /* ---------- BUTTONS ---------- */
 button{
   width:100%;
   padding:12px;
-  margin-top:12px;
   border:none;
   border-radius:30px;
   background:linear-gradient(135deg,#2c5364,#203a43);
@@ -75,22 +63,15 @@ button{
   font-size:15px;
   font-weight:600;
   cursor:pointer;
+  margin-top:12px;
 }
-button:disabled{
-  background:#999;
-  cursor:not-allowed;
-}
+button:disabled{background:#999;cursor:not-allowed}
 
 /* ---------- STATUS ---------- */
-.status{
-  margin-top:14px;
-  text-align:center;
-  font-weight:600;
-}
-.status-red{
-  color:#b71c1c;
-  font-weight:400;
-}
+.status{margin-top:14px;text-align:center;font-size:14px}
+.yellow{color:#f57f17}
+.green{color:#1b5e20}
+.red{color:#b71c1c}
 
 /* ---------- INFO BOX ---------- */
 .infoBox{
@@ -98,9 +79,7 @@ button:disabled{
   border-radius:12px;
   padding:14px;
   margin-top:16px;
-}
-.infoBox b{
-  color:#203a43;
+  font-size:14px;
 }
 
 /* ---------- FOOTER ---------- */
@@ -110,51 +89,23 @@ button:disabled{
   font-size:13px;
   color:#e0e0e0;
 }
-.footer div{
-  margin-top:4px;
-}
 
 /* ---------- MODAL ---------- */
 .modal{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:rgba(0,0,0,.6);
-  display:none;
-  justify-content:center;
-  align-items:center;
+  display:none;justify-content:center;align-items:center;
 }
 .modal-content{
-  background:#fff;
-  padding:22px;
-  width:90%;
-  max-width:420px;
+  background:#fff;padding:22px;
+  width:90%;max-width:420px;
   border-radius:14px;
 }
-.modal-content h3{
-  margin-top:0;
-  color:#203a43;
+textarea{
+  width:100%;min-height:80px;
+  padding:10px;border-radius:8px;border:1px solid #ccc;
 }
-.modal-content textarea{
-  width:100%;
-  min-height:80px;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  margin-top:8px;
-}
-.modal-content .warn{
-  margin-top:10px;
-  color:#b71c1c;
-  font-size:13px;
-}
-.modal-content .actions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-}
-.modal-content .actions button{
-  flex:1;
-}
+.warn{color:#b71c1c;font-size:13px;margin-top:8px}
 </style>
 </head>
 
@@ -165,22 +116,25 @@ button:disabled{
   <h1 id="welcome">Welcome</h1>
   <h2>Group Discussion & Seminar (ME3273)</h2>
 
-  <div id="countdownBox" class="countdown">
+  <div class="countdown">
     ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
   </div>
 
   <div id="wheelSection">
+    <div class="info">
+      Spin the coin to get your topic name for group discussion
+    </div>
     <div id="wheelWrap">
       <canvas id="wheel" width="260" height="260"></canvas>
     </div>
-    <button id="spinBtn" onclick="spin()">Spin the Wheel</button>
+    <button id="spinBtn" onclick="spin()">Spin the Coin</button>
   </div>
 
   <div id="status" class="status"></div>
-
   <div id="resultBox" class="infoBox" style="display:none"></div>
 
   <button id="seminarBtn" onclick="openModal()">Submit / Edit Seminar Topic</button>
+  <button id="logoutBtn" onclick="logout()">Logout</button>
 
 </div>
 
@@ -197,110 +151,67 @@ button:disabled{
     <div class="warn">
       The topic should be technical and related to any trending research topic in mechanical engineering.
     </div>
-    <div class="actions">
-      <button onclick="saveTopic()">Save</button>
-      <button onclick="closeModal()">Cancel</button>
-    </div>
+    <div class="status" id="topicStatus"></div>
+    <button id="saveBtn" onclick="saveTopic()">Save</button>
+    <button onclick="closeModal()">Cancel</button>
   </div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const BACKEND = "https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
-
-/* ================= STATE ================= */
-const params = new URLSearchParams(location.search);
-const token = params.get("token");
-
+const BACKEND="https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
+const token=new URLSearchParams(location.search).get("token");
 let DEADLINE=null, timer=null;
-let wheelAngle=0, spinning=false;
+let angle=0, spinning=false;
 
-/* ================= INIT ================= */
-window.onload = () => {
-  loadDashboard();
-  loadSeminarInfo();
-  drawWheel();
-};
-
-/* ================= COUNTDOWN ================= */
-function startCountdown(deadlineISO){
-  DEADLINE = new Date(deadlineISO);
-  timer = setInterval(updateCountdown,1000);
-  updateCountdown();
-}
-function updateCountdown(){
-  const diff = DEADLINE - new Date();
-  if(diff<=0){
-    timeLeft.innerText="Deadline passed";
-    spinBtn.style.display="none";
-    seminarBtn.disabled=true;
-    seminarBtn.innerText="Seminar topic submission closed";
-    clearInterval(timer);
-    return;
-  }
-  const h=Math.floor(diff/36e5),
-        m=Math.floor(diff%36e5/6e4),
-        s=Math.floor(diff%6e4/1e3);
-  timeLeft.innerText=
-    String(h).padStart(2,"0")+":"+
-    String(m).padStart(2,"0")+":"+
-    String(s).padStart(2,"0");
-}
-
-/* ================= DASHBOARD ================= */
-function loadDashboard(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"dashboard",token
-  })})
-  .then(r=>r.json())
-  .then(res=>{
-    welcome.innerText = `Welcome ${res.name} (${res.roll})`;
-    if(res.status==="ASSIGNED"){
-      showResult(res.project,res.projectName,res.team,res.complete);
-      wheelSection.style.display="none";
+function startCountdown(d){
+  DEADLINE=new Date(d);
+  timer=setInterval(()=>{
+    const diff=DEADLINE-new Date();
+    if(diff<=0){
+      timeLeft.innerText="Deadline passed";
+      spinBtn.style.display="none";
+      seminarBtn.disabled=true;
+      clearInterval(timer);return;
     }
-  });
+    const h=Math.floor(diff/36e5),
+          m=Math.floor(diff%36e5/6e4),
+          s=Math.floor(diff%6e4/1e3);
+    timeLeft.innerText=
+      `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  },1000);
 }
 
-/* ================= SPIN ================= */
 function spin(){
   if(spinning) return;
   spinning=true;
-  spinBtn.style.display="none";
-  status.innerText="Allocating topic… Please wait.";
+  spinBtn.disabled=true;
+  status.className="status yellow";
+  status.innerText="Allocating group topic, please wait…";
 
-  const target = Math.floor(Math.random()*9);
-  const stopAngle = 360*6 + (360/9)*target;
-
-  let step=0;
-  const anim=setInterval(()=>{
-    step+=10;
-    wheelAngle+=step;
-    drawWheel();
-    if(wheelAngle>=stopAngle){
-      clearInterval(anim);
+  let stop=Math.random()*360+2160;
+  let id=setInterval(()=>{
+    angle+=20;
+    draw();
+    if(angle>=stop){
+      clearInterval(id);
       allocate();
     }
   },30);
 }
 
 function allocate(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"assign",token
-  })})
-  .then(r=>r.json())
-  .then(res=>{
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"assign",token})})
+  .then(r=>r.json()).then(res=>{
     status.innerText="";
     showResult(res.project,res.projectName,res.team,res.complete);
   });
 }
 
-/* ================= RESULT ================= */
 function showResult(pid,pname,team,complete){
   let html=`<b>Assigned Topic:</b><br>${pid} – ${pname}<br><br><b>Group Members:</b><br>`;
   team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
   if(!complete){
-    html+=`<div class="status-red" style="margin-top:8px">
+    html+=`<div class="red" style="margin-top:8px">
       A few students haven't spun the wheel yet. Please login later to see full group details.
     </div>`;
   }
@@ -308,59 +219,42 @@ function showResult(pid,pname,team,complete){
   resultBox.style.display="block";
 }
 
-/* ================= SEMINAR ================= */
-function loadSeminarInfo(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"getSeminarTopic",token
-  })})
-  .then(r=>r.json())
-  .then(res=>{
-    startCountdown(res.deadline);
-    topicInput.value=res.topic||"";
-    if(!res.editable){
-      seminarBtn.disabled=true;
-      seminarBtn.innerText="Seminar topic submission closed";
-    }
-  });
+function logout(){
+  logoutBtn.disabled=true;
+  status.className="status yellow";
+  status.innerText="Logging out, please wait…";
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
+  .finally(()=>location.href="login.html");
 }
-function openModal(){ modal.style.display="flex"; }
-function closeModal(){ modal.style.display="none"; }
+
+function openModal(){modal.style.display="flex";}
+function closeModal(){modal.style.display="none";}
+
 function saveTopic(){
+  saveBtn.disabled=true;
+  topicStatus.className="status yellow";
+  topicStatus.innerText="Submitting…";
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"saveSeminarTopic",token,
-    topic:topicInput.value
+    action:"saveSeminarTopic",token,topic:topicInput.value
   })})
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status==="SAVED"){
-      closeModal();
-      alert("Seminar topic saved.");
-    }else{
-      alert("Submission closed.");
-    }
+  .then(r=>r.json()).then(res=>{
+    topicStatus.className="status green";
+    topicStatus.innerText="Seminar topic submitted successfully";
   });
 }
 
-/* ================= WHEEL DRAW ================= */
-function drawWheel(){
-  const ctx=wheel.getContext("2d");
-  ctx.clearRect(0,0,260,260);
-  const cx=130,cy=130,r=120;
+function draw(){
+  const c=wheel.getContext("2d");
+  c.clearRect(0,0,260,260);
   for(let i=0;i<9;i++){
-    ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.fillStyle=i%2?"#90caf9":"#bbdefb";
-    ctx.arc(cx,cy,r,
-      (i*40+wheelAngle)*Math.PI/180,
-      ((i+1)*40+wheelAngle)*Math.PI/180);
-    ctx.fill();
+    c.beginPath();
+    c.moveTo(130,130);
+    c.fillStyle=i%2?"#90caf9":"#bbdefb";
+    c.arc(130,130,120,
+      (i*40+angle)*Math.PI/180,
+      ((i+1)*40+angle)*Math.PI/180);
+    c.fill();
   }
-  ctx.beginPath();
-  ctx.moveTo(cx,cy-r);
-  ctx.lineTo(cx-10,cy-r-20);
-  ctx.lineTo(cx+10,cy-r-20);
-  ctx.fillStyle="#e53935";
-  ctx.fill();
 }
 </script>
 
