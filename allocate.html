@@ -62,13 +62,18 @@ button:disabled{background:#999;cursor:not-allowed}
   margin:12px 0 20px;text-align:center;
   font-size:13px;color:#e0e0e0;
 }
+
+/* MODAL FIX */
 .modal{
   position:fixed;inset:0;background:rgba(0,0,0,.6);
   display:none;justify-content:center;align-items:center;
 }
 .modal-box{
-  background:#fff;width:90%;max-width:420px;
-  border-radius:14px;padding:22px;
+  background:#fff;
+  width:calc(100% - 32px);
+  max-width:420px;
+  border-radius:14px;
+  padding:22px;
 }
 textarea{
   width:100%;min-height:90px;padding:10px;
@@ -136,20 +141,20 @@ const token = new URLSearchParams(location.search).get("token");
 
 let angle=0, spinning=false;
 
-/* ---------- GLOBAL LOCK ---------- */
-function disableAllActions(message){
-  spinBtn.disabled = true;
-  logoutBtn.disabled = true;
-  seminarBtn.disabled = true;
-  status.className = "status yellow";
-  status.innerText = message;
+/* ---------- UI LOCK ---------- */
+function disableAllActions(msg){
+  spinBtn.disabled=true;
+  seminarBtn.disabled=true;
+  logoutBtn.disabled=true;
+  status.className="status yellow";
+  status.innerText=msg;
 }
 
 /* ---------- INIT ---------- */
 drawWheel();
 loadDashboard();
 
-/* ---------- LOAD DASHBOARD ---------- */
+/* ---------- DASHBOARD ---------- */
 function loadDashboard(){
   fetch(BACKEND,{
     method:"POST",
@@ -160,7 +165,11 @@ function loadDashboard(){
     loading.style.display="none";
     content.style.display="block";
 
-    if(res.status === "ASSIGNED"){
+    if(res.deadline){
+      startCountdown(res.deadline);
+    }
+
+    if(res.status==="ASSIGNED"){
       wheelWrap.style.display="none";
       spinBtn.style.display="none";
       spinMsg.style.display="none";
@@ -169,7 +178,7 @@ function loadDashboard(){
   });
 }
 
-/* ---------- COUNTDOWN (OPTIONAL IF YOU ALREADY HAVE) ---------- */
+/* ---------- COUNTDOWN ---------- */
 function startCountdown(deadline){
   const D=new Date(deadline);
   setInterval(()=>{
@@ -206,22 +215,20 @@ function drawWheel(){
 /* ---------- SPIN ---------- */
 function spin(){
   if(spinning) return;
-  spinning = true;
-
+  spinning=true;
   disableAllActions("Allocating group topic, please wait…");
 
-  let stop = Math.random()*360 + 2160;
-  let id = setInterval(()=>{
-    angle += 20;
+  let stop=Math.random()*360+2160;
+  let id=setInterval(()=>{
+    angle+=20;
     drawWheel();
-    if(angle >= stop){
+    if(angle>=stop){
       clearInterval(id);
 
-      // NEW MESSAGE DURING BACKEND CALL
-      status.className="status yellow";
-      status.innerText="Assigning topic, please wait…";
-
-      allocate();
+      requestAnimationFrame(()=>{
+        status.innerText="Assigning topic, please wait…";
+        allocate();
+      });
     }
   },30);
 }
@@ -253,9 +260,8 @@ function showResult(res){
   resultBox.innerHTML=html;
   resultBox.style.display="block";
 
-  // RE-ENABLE ALLOWED ACTIONS
-  seminarBtn.disabled = false;
-  logoutBtn.disabled = false;
+  seminarBtn.disabled=false;
+  logoutBtn.disabled=false;
 }
 
 /* ---------- SEMINAR ---------- */
@@ -288,15 +294,15 @@ function saveTopic(){
 /* ---------- LOGOUT ---------- */
 function logout(){
   disableAllActions("Logging out, please wait…");
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({ action:"logout", token })
-  })
-  .finally(()=>{
+  requestAnimationFrame(()=>{
     setTimeout(()=>{
-      location.href="login.html";
-    },800);
+      fetch(BACKEND,{
+        method:"POST",
+        body:new URLSearchParams({ action:"logout", token })
+      }).finally(()=>{
+        location.href="login.html";
+      });
+    },300);
   });
 }
 </script>
