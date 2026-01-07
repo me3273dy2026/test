@@ -7,257 +7,360 @@
 
 <style>
 body{
-  margin:0;
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  margin:0;
   min-height:100vh;
   display:flex;
   flex-direction:column;
   align-items:center;
 }
+
+/* ---------- MAIN CARD ---------- */
 .card{
   background:#ffffff;
-  width:92%;
+  width:100%;
   max-width:520px;
-  margin-top:30px;
-  padding:22px;
-  border-radius:18px;
-  box-shadow:0 18px 40px rgba(0,0,0,.25);
+  margin:24px 12px;
+  padding:24px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-.header{
-  text-align:center;
-  font-size:15.5px;
-  font-weight:600;
+
+/* ---------- HEADINGS ---------- */
+h1{
+  font-size:18px;
+  margin:0 0 6px;
   color:#203a43;
-}
-.sub{
   text-align:center;
-  font-size:13px;
-  color:#666;
-  margin-bottom:16px;
 }
-.info-box{
-  background:#f4f7fa;
-  padding:14px 16px;
-  border-radius:12px;
-  margin-bottom:14px;
-}
-.info-title{
-  font-size:12px;
-  font-weight:700;
-  color:#2c5364;
-  margin-bottom:6px;
-  text-transform:uppercase;
-}
-.info-content{
-  font-size:14.5px;
-}
-.status-red{
-  background:#fdecea;
-  color:#b71c1c;
-  padding:12px;
-  border-radius:12px;
-  font-weight:400;   /* normal text */
+h2{
+  font-size:14px;
+  margin:0 0 16px;
+  color:#555;
   text-align:center;
-  margin-top:12px;
+}
+
+/* ---------- COUNTDOWN ---------- */
+.countdown{
+  margin:10px auto 18px;
+  padding:10px 14px;
+  text-align:center;
+  background:#fff8e1;
+  color:#6d4c41;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
 }
 
 /* ---------- WHEEL ---------- */
-.wheel-wrap{
-  position:relative;
-  width:240px;
-  height:240px;
-  margin:18px auto;
+#wheelWrap{
+  display:flex;
+  justify-content:center;
+  margin:18px 0;
 }
-#wheel{
-  width:100%;
-  height:100%;
-  border-radius:50%;
-  border:6px solid #203a43;
-  background:conic-gradient(
-    #1abc9c 0deg 40deg,
-    #3498db 40deg 80deg,
-    #9b59b6 80deg 120deg,
-    #e67e22 120deg 160deg,
-    #e74c3c 160deg 200deg,
-    #f1c40f 200deg 240deg,
-    #16a085 240deg 280deg,
-    #2980b9 280deg 320deg,
-    #8e44ad 320deg 360deg
-  );
+canvas{
+  max-width:260px;
 }
-.pointer{
-  position:absolute;
-  top:-12px;
-  left:50%;
-  transform:translateX(-50%);
-  border-left:10px solid transparent;
-  border-right:10px solid transparent;
-  border-bottom:18px solid #c0392b;
-}
-.center{text-align:center;}
+
+/* ---------- BUTTONS ---------- */
 button{
-  padding:12px 26px;
+  width:100%;
+  padding:12px;
+  margin-top:12px;
   border:none;
   border-radius:30px;
   background:linear-gradient(135deg,#2c5364,#203a43);
   color:#fff;
+  font-size:15px;
   font-weight:600;
   cursor:pointer;
 }
-.logout{
-  margin-top:18px;
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
 }
-.logout button{
-  background:#c0392b;
-}
-.footer{
+
+/* ---------- STATUS ---------- */
+.status{
   margin-top:14px;
   text-align:center;
-  font-size:12px;
+  font-weight:600;
+}
+.status-red{
+  color:#b71c1c;
+  font-weight:400;
+}
+
+/* ---------- INFO BOX ---------- */
+.infoBox{
+  background:#f5f7fa;
+  border-radius:12px;
+  padding:14px;
+  margin-top:16px;
+}
+.infoBox b{
+  color:#203a43;
+}
+
+/* ---------- FOOTER ---------- */
+.footer{
+  margin:12px 0 20px;
+  text-align:center;
+  font-size:13px;
   color:#e0e0e0;
 }
-.footer div{margin-top:2px;}
+.footer div{
+  margin-top:4px;
+}
+
+/* ---------- MODAL ---------- */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+.modal-content{
+  background:#fff;
+  padding:22px;
+  width:90%;
+  max-width:420px;
+  border-radius:14px;
+}
+.modal-content h3{
+  margin-top:0;
+  color:#203a43;
+}
+.modal-content textarea{
+  width:100%;
+  min-height:80px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  margin-top:8px;
+}
+.modal-content .warn{
+  margin-top:10px;
+  color:#b71c1c;
+  font-size:13px;
+}
+.modal-content .actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+.modal-content .actions button{
+  flex:1;
+}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-  <div id="header" class="header">Loading…</div>
-  <div class="sub">Group Discussion & Seminar (ME3273)</div>
-  <div id="content">Checking allocation status…</div>
-</div>
 
-<div class="logout">
-  <button id="logoutBtn" onclick="logout()">Logout</button>
+  <h1 id="welcome">Welcome</h1>
+  <h2>Group Discussion & Seminar (ME3273)</h2>
+
+  <div id="countdownBox" class="countdown">
+    ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
+  </div>
+
+  <div id="wheelSection">
+    <div id="wheelWrap">
+      <canvas id="wheel" width="260" height="260"></canvas>
+    </div>
+    <button id="spinBtn" onclick="spin()">Spin the Wheel</button>
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <div id="resultBox" class="infoBox" style="display:none"></div>
+
+  <button id="seminarBtn" onclick="openModal()">Submit / Edit Seminar Topic</button>
+
 </div>
 
 <div class="footer">
-  Developed by Rajesh Akula
+  <div>Developed by Rajesh Akula</div>
   <div>© 2026 · IIEST Shibpur</div>
 </div>
 
+<!-- ---------- MODAL ---------- -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>Seminar Topic</h3>
+    <textarea id="topicInput"></textarea>
+    <div class="warn">
+      The topic should be technical and related to any trending research topic in mechanical engineering.
+    </div>
+    <div class="actions">
+      <button onclick="saveTopic()">Save</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const BACKEND =
-"https://script.google.com/macros/s/AKfycbxCDnzwzQaTPPMHe_wyOM4EiEObwktVK7_c2zcVfAow9f9K1nyjDHiFlwbtafCEQcW9lg/exec";
+/* ================= CONFIG ================= */
+const BACKEND = "https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
 
-const token = new URLSearchParams(window.location.search).get("token");
-const content = document.getElementById("content");
-const header  = document.getElementById("header");
-const logoutBtn = document.getElementById("logoutBtn");
+/* ================= STATE ================= */
+const params = new URLSearchParams(location.search);
+const token = params.get("token");
 
-/* ---------- INITIAL LOAD ---------- */
-fetch(BACKEND,{
-  method:"POST",
-  body:new URLSearchParams({ action:"dashboard", token })
-})
-.then(r=>r.json())
-.then(res=>{
-  if(res.status==="ASSIGNED"){
-    showAssigned(res);
-  }else{
-    showWheel();
+let DEADLINE=null, timer=null;
+let wheelAngle=0, spinning=false;
+
+/* ================= INIT ================= */
+window.onload = () => {
+  loadDashboard();
+  loadSeminarInfo();
+  drawWheel();
+};
+
+/* ================= COUNTDOWN ================= */
+function startCountdown(deadlineISO){
+  DEADLINE = new Date(deadlineISO);
+  timer = setInterval(updateCountdown,1000);
+  updateCountdown();
+}
+function updateCountdown(){
+  const diff = DEADLINE - new Date();
+  if(diff<=0){
+    timeLeft.innerText="Deadline passed";
+    spinBtn.style.display="none";
+    seminarBtn.disabled=true;
+    seminarBtn.innerText="Seminar topic submission closed";
+    clearInterval(timer);
+    return;
   }
-});
-
-/* ---------- SHOW WHEEL ---------- */
-function showWheel(){
-  header.innerText="Welcome!";
-  content.innerHTML=`
-    <div class="wheel-wrap">
-      <div class="pointer"></div>
-      <div id="wheel"></div>
-    </div>
-    <div class="center">
-      <button id="spinBtn" onclick="spin()">Spin the Wheel</button>
-    </div>
-  `;
+  const h=Math.floor(diff/36e5),
+        m=Math.floor(diff%36e5/6e4),
+        s=Math.floor(diff%6e4/1e3);
+  timeLeft.innerText=
+    String(h).padStart(2,"0")+":"+
+    String(m).padStart(2,"0")+":"+
+    String(s).padStart(2,"0");
 }
 
-/* ---------- SPIN ---------- */
-function spin(){
-  const btn=document.getElementById("spinBtn");
-  btn.style.display="none";  // hide immediately
-
-  content.innerHTML += `
-    <div class="status-red">
-      Allocating topic… Please wait.
-    </div>
-  `;
-
-  const wheel=document.getElementById("wheel");
-  wheel.style.transition="none";
-  wheel.style.transform="rotate(0deg)";
-
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      wheel.style.transition="transform 4s ease-out";
-      wheel.style.transform=
-        `rotate(${360*5 + Math.random()*360}deg)`;
-    });
-  });
-
-  setTimeout(assign,4200);
-}
-
-/* ---------- ASSIGN ---------- */
-function assign(){
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({ action:"assign", token })
-  })
+/* ================= DASHBOARD ================= */
+function loadDashboard(){
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"dashboard",token
+  })})
   .then(r=>r.json())
-  .then(showAssigned);
-}
-
-/* ---------- SHOW ASSIGNED ---------- */
-function showAssigned(res){
-  const me=res.team[0];
-  header.innerText=`Welcome ${me.name} (${me.roll})`;
-
-  let html=`
-    <div class="info-box">
-      <div class="info-title">Assigned Topic</div>
-      <div class="info-content">
-        ${res.project} – ${res.projectName}
-      </div>
-    </div>
-
-    <div class="info-box">
-      <div class="info-title">Group Members</div>
-      ${res.team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>")}
-    </div>
-  `;
-
-  if(!res.complete){
-    html+=`
-      <div class="status-red">
-        A few students haven't spun the wheel yet.
-        Please login later to see full group details.
-      </div>
-    `;
-  }
-
-  content.innerHTML=html;
-}
-
-/* ---------- LOGOUT ---------- */
-function logout(){
-  logoutBtn.style.display="none";
-
-  content.innerHTML=`
-    <div class="status-red">
-      Logging out… Please wait.
-    </div>
-  `;
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({ action:"logout", token })
-  }).finally(()=>{
-    location.href="login.html";
+  .then(res=>{
+    welcome.innerText = `Welcome ${res.name} (${res.roll})`;
+    if(res.status==="ASSIGNED"){
+      showResult(res.project,res.projectName,res.team,res.complete);
+      wheelSection.style.display="none";
+    }
   });
+}
+
+/* ================= SPIN ================= */
+function spin(){
+  if(spinning) return;
+  spinning=true;
+  spinBtn.style.display="none";
+  status.innerText="Allocating topic… Please wait.";
+
+  const target = Math.floor(Math.random()*9);
+  const stopAngle = 360*6 + (360/9)*target;
+
+  let step=0;
+  const anim=setInterval(()=>{
+    step+=10;
+    wheelAngle+=step;
+    drawWheel();
+    if(wheelAngle>=stopAngle){
+      clearInterval(anim);
+      allocate();
+    }
+  },30);
+}
+
+function allocate(){
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"assign",token
+  })})
+  .then(r=>r.json())
+  .then(res=>{
+    status.innerText="";
+    showResult(res.project,res.projectName,res.team,res.complete);
+  });
+}
+
+/* ================= RESULT ================= */
+function showResult(pid,pname,team,complete){
+  let html=`<b>Assigned Topic:</b><br>${pid} – ${pname}<br><br><b>Group Members:</b><br>`;
+  team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
+  if(!complete){
+    html+=`<div class="status-red" style="margin-top:8px">
+      A few students haven't spun the wheel yet. Please login later to see full group details.
+    </div>`;
+  }
+  resultBox.innerHTML=html;
+  resultBox.style.display="block";
+}
+
+/* ================= SEMINAR ================= */
+function loadSeminarInfo(){
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"getSeminarTopic",token
+  })})
+  .then(r=>r.json())
+  .then(res=>{
+    startCountdown(res.deadline);
+    topicInput.value=res.topic||"";
+    if(!res.editable){
+      seminarBtn.disabled=true;
+      seminarBtn.innerText="Seminar topic submission closed";
+    }
+  });
+}
+function openModal(){ modal.style.display="flex"; }
+function closeModal(){ modal.style.display="none"; }
+function saveTopic(){
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"saveSeminarTopic",token,
+    topic:topicInput.value
+  })})
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="SAVED"){
+      closeModal();
+      alert("Seminar topic saved.");
+    }else{
+      alert("Submission closed.");
+    }
+  });
+}
+
+/* ================= WHEEL DRAW ================= */
+function drawWheel(){
+  const ctx=wheel.getContext("2d");
+  ctx.clearRect(0,0,260,260);
+  const cx=130,cy=130,r=120;
+  for(let i=0;i<9;i++){
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.fillStyle=i%2?"#90caf9":"#bbdefb";
+    ctx.arc(cx,cy,r,
+      (i*40+wheelAngle)*Math.PI/180,
+      ((i+1)*40+wheelAngle)*Math.PI/180);
+    ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.moveTo(cx,cy-r);
+  ctx.lineTo(cx-10,cy-r-20);
+  ctx.lineTo(cx+10,cy-r-20);
+  ctx.fillStyle="#e53935";
+  ctx.fill();
 }
 </script>
 
