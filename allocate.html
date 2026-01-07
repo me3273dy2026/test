@@ -51,20 +51,15 @@ body{
 }
 .info-content{
   font-size:14.5px;
-  color:#222;
 }
-.status-box{
-  background:#eef2f5;
+.status-red{
+  background:#fdecea;
+  color:#b71c1c;
   padding:12px;
   border-radius:12px;
+  font-weight:700;
   text-align:center;
-  font-size:14px;
-  font-weight:600;
-  color:#555;
-  margin-top:12px;
 }
-
-/* ---------- WHEEL ---------- */
 .wheel-wrap{
   position:relative;
   width:240px;
@@ -87,30 +82,16 @@ body{
     #2980b9 280deg 320deg,
     #8e44ad 320deg 360deg
   );
-  transition:transform 4s cubic-bezier(.25,.1,.25,1);
 }
 .pointer{
   position:absolute;
   top:-12px;
   left:50%;
   transform:translateX(-50%);
-  width:0;height:0;
   border-left:10px solid transparent;
   border-right:10px solid transparent;
   border-bottom:18px solid #c0392b;
 }
-.wheel-label{
-  position:absolute;
-  width:100%;
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:700;
-  color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.4);
-}
-
 .center{text-align:center;}
 button{
   padding:12px 26px;
@@ -118,29 +99,16 @@ button{
   border-radius:30px;
   background:linear-gradient(135deg,#2c5364,#203a43);
   color:#fff;
-  font-size:15px;
   font-weight:600;
-  cursor:pointer;
 }
-button:disabled{
-  background:#aaa;
-  cursor:not-allowed;
-}
-
-/* ---------- OUTSIDE CARD ---------- */
-.logout{
-  margin-top:18px;
-}
-.logout button{
-  background:#c0392b;
-}
+.logout{margin-top:18px;}
+.logout button{background:#c0392b;}
 .footer{
   margin-top:14px;
   text-align:center;
   font-size:12px;
   color:#e0e0e0;
 }
-.footer div{margin-top:2px;}
 </style>
 </head>
 
@@ -149,14 +117,11 @@ button:disabled{
 <div class="card">
   <div id="header" class="header">Loading…</div>
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
-
-  <div id="content" class="status-box">
-    Checking allocation status…
-  </div>
+  <div id="content">Checking status…</div>
 </div>
 
 <div class="logout">
-  <button id="logoutBtn" onclick="logout()">Logout</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
 <div class="footer">
@@ -165,34 +130,25 @@ button:disabled{
 </div>
 
 <script>
-const BACKEND_URL =
-"https://script.google.com/macros/s/AKfycbwBQJCxQHeKTUUpsFTxY1be58UvP0SEfg__Y9vlqMvpRHPOYvll2wDOiMt7VpImbEFIxw/exec";
+const BACKEND =
+"https://script.google.com/macros/s/AKfycbxCDnzwzQaTPPMHe_wyOM4EiEObwktVK7_c2zcVfAow9f9K1nyjDHiFlwbtafCEQcW9lg/exec";
 
 const token = new URLSearchParams(window.location.search).get("token");
 const content = document.getElementById("content");
 const header  = document.getElementById("header");
-const logoutBtn = document.getElementById("logoutBtn");
 
-if(!token){
-  content.innerHTML="Invalid session.";
-}else{
-  checkStatus();
-}
-
-function checkStatus(){
-  fetch(BACKEND_URL,{
-    method:"POST",
-    body:new URLSearchParams({ action:"dashboard", token })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status==="ASSIGNED"){
-      showAssigned(res.project, res.projectName, res.team, res.name, res.roll, res.complete);
-    }else{
-      showWheel();
-    }
-  });
-}
+fetch(BACKEND,{
+  method:"POST",
+  body:new URLSearchParams({ action:"dashboard", token })
+})
+.then(r=>r.json())
+.then(res=>{
+  if(res.status==="ASSIGNED"){
+    showAssigned(res);
+  }else{
+    showWheel();
+  }
+});
 
 function showWheel(){
   header.innerText="Welcome!";
@@ -203,71 +159,60 @@ function showWheel(){
     </div>
     <div class="center">
       <button id="spinBtn" onclick="spin()">Spin the Wheel</button>
-    </div>
-  `;
+    </div>`;
 }
 
 function spin(){
-  const btn=document.getElementById("spinBtn");
-  btn.disabled=true;
-
-  content.innerHTML += `<div class="status-box">Allocating topic… Please wait.</div>`;
-
+  document.getElementById("spinBtn").disabled=true;
   const wheel=document.getElementById("wheel");
-  wheel.style.transform = `rotate(${360*5 + Math.random()*360}deg)`;
 
-  setTimeout(assignTopic,4200);
+  wheel.style.transition="none";
+  wheel.style.transform="rotate(0deg)";
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      wheel.style.transition="transform 4s ease-out";
+      wheel.style.transform=`rotate(${360*5+Math.random()*360}deg)`;
+    });
+  });
+
+  setTimeout(assign,4200);
 }
 
-function assignTopic(){
-  fetch(BACKEND_URL,{
+function assign(){
+  fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({ action:"assign", token })
   })
   .then(r=>r.json())
-  .then(res=>{
-    showAssigned(res.project, res.projectName, res.team, "", "", res.complete);
-  });
+  .then(showAssigned);
 }
 
-function showAssigned(topicID, topicName, team, name, roll, complete){
-  const me = team[0];
-  header.innerText = `Welcome ${name || me.name} (${roll || me.roll})`;
-
-  let html = `
+function showAssigned(res){
+  const me=res.team[0];
+  header.innerText=`Welcome ${me.name} (${me.roll})`;
+  let html=`
     <div class="info-box">
       <div class="info-title">Assigned Topic</div>
-      <div class="info-content">${topicID} – ${topicName}</div>
+      <div class="info-content">${res.project} – ${res.projectName}</div>
     </div>
-
     <div class="info-box">
       <div class="info-title">Group Members</div>
-      <div class="info-content">
-        ${team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>")}
-      </div>
-    </div>
-  `;
-
-  if(!complete){
-    html += `
-      <div class="status-box">
-        A few students haven't spun the wheel yet.
-        Please login later to see full group details.
-      </div>
-    `;
+      ${res.team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>")}
+    </div>`;
+  if(!res.complete){
+    html+=`<div class="status-red">
+      A few students haven't spun the wheel yet.
+      Please login later to see full group details.
+    </div>`;
   }
-
-  content.innerHTML = html;
+  content.innerHTML=html;
 }
 
 function logout(){
-  logoutBtn.disabled=true;
-  fetch(BACKEND_URL,{
+  fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({ action:"logout", token })
-  }).finally(()=>{
-    location.href="login.html";
-  });
+  }).finally(()=>location.href="login.html");
 }
 </script>
 
