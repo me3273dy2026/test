@@ -11,30 +11,65 @@ body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   min-height:100vh;
-  display:flex;justify-content:center;
+  display:flex;
+  justify-content:center;
 }
-.card{
-  background:#fff;
-  width:100%;max-width:600px;
-  margin:20px;padding:20px;
-  border-radius:16px;
-  box-shadow:0 20px 40px rgba(0,0,0,.25);
+.main-card{
+  background:#ffffff;
+  width:100%;
+  max-width:650px;
+  margin:20px;
+  padding:22px;
+  border-radius:18px;
+  box-shadow:0 20px 45px rgba(0,0,0,.28);
 }
 .header{
   text-align:center;
-  color:#203a43;
-  font-size:18px;
+  font-size:17px;
   font-weight:600;
+  color:#203a43;
 }
 .sub{
   text-align:center;
-  color:#666;
   font-size:13px;
-  margin-bottom:15px;
+  color:#666;
+  margin-bottom:18px;
+}
+.info-box{
+  background:#f7f9fb;
+  border-left:5px solid #2c5364;
+  padding:14px 16px;
+  border-radius:10px;
+  margin-bottom:14px;
+}
+.info-title{
+  font-size:13px;
+  font-weight:700;
+  color:#2c5364;
+  margin-bottom:6px;
+  text-transform:uppercase;
+}
+.info-content{
+  font-size:15px;
+  color:#222;
+}
+.members{
+  line-height:1.6;
+}
+.status-box{
+  background:#fff3cd;
+  border-left:5px solid #f1c40f;
+  padding:12px 14px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  color:#856404;
 }
 #wheel{
-  width:230px;height:230px;margin:20px auto;
-  border-radius:50%;border:6px solid #203a43;
+  width:230px;height:230px;
+  margin:18px auto;
+  border-radius:50%;
+  border:6px solid #203a43;
   background:conic-gradient(
     #1abc9c,#3498db,#9b59b6,#e67e22,#e74c3c,
     #f1c40f,#16a085,#2980b9,#8e44ad
@@ -42,34 +77,45 @@ body{
   transition:transform 4s cubic-bezier(.25,.1,.25,1);
 }
 #pointer{
-  width:0;height:0;margin:0 auto;
+  width:0;height:0;
+  margin:0 auto;
   border-left:10px solid transparent;
   border-right:10px solid transparent;
   border-bottom:18px solid #c0392b;
 }
+.center{text-align:center;}
 button{
-  padding:12px 24px;border:none;border-radius:30px;
+  padding:12px 26px;
+  border:none;
+  border-radius:30px;
   background:linear-gradient(135deg,#2c5364,#203a43);
-  color:#fff;font-size:15px;font-weight:600;
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
   cursor:pointer;
 }
-.section{margin-top:18px;font-size:15px;}
-.warn{color:#c0392b;font-weight:600;margin-top:10px;font-size:14px;}
-.footer{
-  margin-top:30px;
-  font-size:12px;
-  color:#777;
+.logout{
+  margin-top:22px;
   text-align:center;
 }
-.footer div{font-size:12px;color:#777;}
-.logout{text-align:center;margin-top:25px;}
-.logout button{background:#c0392b;}
+.logout button{
+  background:#c0392b;
+}
+.footer{
+  margin-top:26px;
+  text-align:center;
+  font-size:12px;
+  color:#777;
+}
+.footer div{
+  margin-top:2px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="main-card">
   <div id="header" class="header">Loading…</div>
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
 
@@ -119,14 +165,14 @@ function showWheel(){
   content.innerHTML=`
     <div id="pointer"></div>
     <div id="wheel"></div>
-    <div style="text-align:center">
+    <div class="center">
       <button onclick="spin()">SPIN & ASSIGN TOPIC</button>
     </div>`;
 }
 
 function spin(){
   const wheel=document.getElementById("wheel");
-  wheel.style.transform=`rotate(${360*6+Math.random()*360}deg)`;
+  wheel.style.transform=\`rotate(\${360*6+Math.random()*360}deg)\`;
   setTimeout(assign,4200);
 }
 
@@ -143,32 +189,4 @@ function assign(){
 
 function showDetails(name,roll,topic,team,complete){
   const me=team[0];
-  header.innerText=`Welcome ${name||me.name} (${roll||me.roll})`;
-
-  let html=`
-    <div class="section">
-      <b>Assigned Topic:</b><br>${topic}
-    </div>
-    <div class="section"><b>Group Members:</b><br>`;
-  team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
-  html+=`</div>`;
-
-  if(!complete){
-    html+=`<div class="warn">
-      A few students haven't spun the wheel yet.
-      Please login later to see full group details.
-    </div>`;
-  }
-  content.innerHTML=html;
-}
-
-function logout(){
-  fetch(BACKEND_URL,{
-    method:"POST",
-    body:new URLSearchParams({action:"logout",token})
-  }).then(()=>location.href="login.html");
-}
-</script>
-
-</body>
-</html>
+  header.innerText=\`Welcome \${name||me.name} (\${roll||
