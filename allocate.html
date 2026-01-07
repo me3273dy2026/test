@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Student Dashboard | ME3273</title>
+<title>Student Page | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -20,10 +20,20 @@ body{
   border-radius:16px;
   box-shadow:0 20px 40px rgba(0,0,0,.25);
 }
-h1{text-align:center;color:#203a43;}
-.sub{text-align:center;color:#666;font-size:14px;margin-bottom:15px;}
+.header{
+  text-align:center;
+  color:#203a43;
+  font-size:18px;
+  font-weight:600;
+}
+.sub{
+  text-align:center;
+  color:#666;
+  font-size:13px;
+  margin-bottom:15px;
+}
 #wheel{
-  width:240px;height:240px;margin:20px auto;
+  width:230px;height:230px;margin:20px auto;
   border-radius:50%;border:6px solid #203a43;
   background:conic-gradient(
     #1abc9c,#3498db,#9b59b6,#e67e22,#e74c3c,
@@ -43,11 +53,15 @@ button{
   color:#fff;font-size:15px;font-weight:600;
   cursor:pointer;
 }
-.section{margin-top:18px;}
-.warn{color:#c0392b;font-weight:600;margin-top:10px;}
+.section{margin-top:18px;font-size:15px;}
+.warn{color:#c0392b;font-weight:600;margin-top:10px;font-size:14px;}
 .footer{
-  margin-top:30px;font-size:12px;color:#777;text-align:center;
+  margin-top:30px;
+  font-size:12px;
+  color:#777;
+  text-align:center;
 }
+.footer div{font-size:12px;color:#777;}
 .logout{text-align:center;margin-top:25px;}
 .logout button{background:#c0392b;}
 </style>
@@ -56,7 +70,7 @@ button{
 <body>
 
 <div class="card">
-  <h1>Student Dashboard</h1>
+  <div id="header" class="header">Loading…</div>
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
 
   <div id="content">Loading…</div>
@@ -66,7 +80,8 @@ button{
   </div>
 
   <div class="footer">
-    Developed by Rajesh Akula · IIEST Shibpur
+    Developed by Rajesh Akula
+    <div>© 2026 · IIEST Shibpur</div>
   </div>
 </div>
 
@@ -76,6 +91,7 @@ const BACKEND_URL =
 
 const token=new URLSearchParams(window.location.search).get("token");
 const content=document.getElementById("content");
+const header=document.getElementById("header");
 
 if(!token){
   content.innerHTML="<b>Invalid session. Please login again.</b>";
@@ -88,10 +104,14 @@ function loadDashboard(){
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.status==="NOT_ASSIGNED") showWheel();
-    else if(res.status==="ASSIGNED")
+    if(res.status==="NOT_ASSIGNED"){
+      header.innerText="Welcome!";
+      showWheel();
+    } else if(res.status==="ASSIGNED"){
       showDetails(res.name,res.roll,res.project,res.team,res.complete);
-    else content.innerHTML="<b>Session expired.</b>";
+    } else {
+      content.innerHTML="<b>Session expired.</b>";
+    }
   });
 }
 
@@ -100,7 +120,7 @@ function showWheel(){
     <div id="pointer"></div>
     <div id="wheel"></div>
     <div style="text-align:center">
-      <button onclick="spin()">SPIN & ASSIGN PROJECT</button>
+      <button onclick="spin()">SPIN & ASSIGN TOPIC</button>
     </div>`;
 }
 
@@ -121,17 +141,22 @@ function assign(){
   });
 }
 
-function showDetails(name,roll,project,team,complete){
+function showDetails(name,roll,topic,team,complete){
+  const me=team[0];
+  header.innerText=`Welcome ${name||me.name} (${roll||me.roll})`;
+
   let html=`
-    <div class="section"><b>Welcome ${name||team[0].name} (${roll||team[0].roll})</b></div>
-    <div class="section"><b>Assigned Project:</b><br>${project}</div>
-    <div class="section"><b>Team Members:</b><br>`;
+    <div class="section">
+      <b>Assigned Topic:</b><br>${topic}
+    </div>
+    <div class="section"><b>Group Members:</b><br>`;
   team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
   html+=`</div>`;
+
   if(!complete){
     html+=`<div class="warn">
       A few students haven't spun the wheel yet.
-      Please login later to see full team.
+      Please login later to see full group details.
     </div>`;
   }
   content.innerHTML=html;
