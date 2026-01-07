@@ -39,7 +39,7 @@ h1{color:#203a43;font-size:20px;}
 
 <script>
 const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbwo6QTAp6Pu2IOKLzs2L4K9_g12yflElfzokvT-xJOmqJU4vGPBPPP6mmMp3u2lqbKM1A/exec";
+  "https://script.google.com/macros/s/AKfycbyDrGsFVsYTxLyGkWLgEOQUDYCJXXeQur-7r8a9R59rWChtrxAtLFOt5pQU3C8oFftsCg/exec";
 
 // Read URL parameters
 const params = new URLSearchParams(window.location.search);
@@ -48,33 +48,38 @@ const dob  = params.get("dob");
 
 const msg = document.getElementById("msg");
 
-if(!roll || !dob){
-  msg.style.color = "red";
-  msg.innerText = "Invalid access. Please login again.";
-} else {
+msg.innerHTML = `
+<button onclick="spin()">SPIN & ASSIGN PROJECT</button>
+`;
 
-  // Verify login again (safety)
-  fetch(BACKEND_URL, {
-    method: "POST",
-    body: new URLSearchParams({
-      roll: roll,
-      dob: dob
+function spin(){
+
+  fetch(BACKEND_URL,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"assign",
+      roll:roll,
+      dob:dob
     })
   })
-  .then(r => r.json())
-  .then(res => {
-    if(res.status === "LOGIN_OK"){
-      msg.style.color = "green";
-      msg.innerText = "Login verified. Ready for project allocation.";
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="ASSIGNED"){
+      show(res.project,res.team);
+    } else if(res.status==="ALREADY_ASSIGNED"){
+      msg.innerText="Already assigned.";
     } else {
-      msg.style.color = "red";
-      msg.innerText = "Session expired. Please login again.";
+      msg.innerText="No projects left.";
     }
-  })
-  .catch(() => {
-    msg.style.color = "red";
-    msg.innerText = "Server error. Please refresh.";
   });
+}
+
+function show(project,team){
+  let html=`<h3>${project}</h3><hr>`;
+  team.forEach((s,i)=>{
+    html+=`${i+1}. ${s.name} (${s.roll})<br>`;
+  });
+  msg.innerHTML=html;
 }
 </script>
 
