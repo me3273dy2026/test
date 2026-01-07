@@ -57,9 +57,12 @@ body{
   color:#b71c1c;
   padding:12px;
   border-radius:12px;
-  font-weight:700;
+  font-weight:400;   /* normal text */
   text-align:center;
+  margin-top:12px;
 }
+
+/* ---------- WHEEL ---------- */
 .wheel-wrap{
   position:relative;
   width:240px;
@@ -100,15 +103,21 @@ button{
   background:linear-gradient(135deg,#2c5364,#203a43);
   color:#fff;
   font-weight:600;
+  cursor:pointer;
 }
-.logout{margin-top:18px;}
-.logout button{background:#c0392b;}
+.logout{
+  margin-top:18px;
+}
+.logout button{
+  background:#c0392b;
+}
 .footer{
   margin-top:14px;
   text-align:center;
   font-size:12px;
   color:#e0e0e0;
 }
+.footer div{margin-top:2px;}
 </style>
 </head>
 
@@ -117,11 +126,11 @@ button{
 <div class="card">
   <div id="header" class="header">Loading…</div>
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
-  <div id="content">Checking status…</div>
+  <div id="content">Checking allocation status…</div>
 </div>
 
 <div class="logout">
-  <button onclick="logout()">Logout</button>
+  <button id="logoutBtn" onclick="logout()">Logout</button>
 </div>
 
 <div class="footer">
@@ -136,7 +145,9 @@ const BACKEND =
 const token = new URLSearchParams(window.location.search).get("token");
 const content = document.getElementById("content");
 const header  = document.getElementById("header");
+const logoutBtn = document.getElementById("logoutBtn");
 
+/* ---------- INITIAL LOAD ---------- */
 fetch(BACKEND,{
   method:"POST",
   body:new URLSearchParams({ action:"dashboard", token })
@@ -150,6 +161,7 @@ fetch(BACKEND,{
   }
 });
 
+/* ---------- SHOW WHEEL ---------- */
 function showWheel(){
   header.innerText="Welcome!";
   content.innerHTML=`
@@ -159,25 +171,37 @@ function showWheel(){
     </div>
     <div class="center">
       <button id="spinBtn" onclick="spin()">Spin the Wheel</button>
-    </div>`;
+    </div>
+  `;
 }
 
+/* ---------- SPIN ---------- */
 function spin(){
-  document.getElementById("spinBtn").disabled=true;
-  const wheel=document.getElementById("wheel");
+  const btn=document.getElementById("spinBtn");
+  btn.style.display="none";  // hide immediately
 
+  content.innerHTML += `
+    <div class="status-red">
+      Allocating topic… Please wait.
+    </div>
+  `;
+
+  const wheel=document.getElementById("wheel");
   wheel.style.transition="none";
   wheel.style.transform="rotate(0deg)";
+
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       wheel.style.transition="transform 4s ease-out";
-      wheel.style.transform=`rotate(${360*5+Math.random()*360}deg)`;
+      wheel.style.transform=
+        `rotate(${360*5 + Math.random()*360}deg)`;
     });
   });
 
   setTimeout(assign,4200);
 }
 
+/* ---------- ASSIGN ---------- */
 function assign(){
   fetch(BACKEND,{
     method:"POST",
@@ -187,32 +211,53 @@ function assign(){
   .then(showAssigned);
 }
 
+/* ---------- SHOW ASSIGNED ---------- */
 function showAssigned(res){
   const me=res.team[0];
   header.innerText=`Welcome ${me.name} (${me.roll})`;
+
   let html=`
     <div class="info-box">
       <div class="info-title">Assigned Topic</div>
-      <div class="info-content">${res.project} – ${res.projectName}</div>
+      <div class="info-content">
+        ${res.project} – ${res.projectName}
+      </div>
     </div>
+
     <div class="info-box">
       <div class="info-title">Group Members</div>
       ${res.team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>")}
-    </div>`;
+    </div>
+  `;
+
   if(!res.complete){
-    html+=`<div class="status-red">
-      A few students haven't spun the wheel yet.
-      Please login later to see full group details.
-    </div>`;
+    html+=`
+      <div class="status-red">
+        A few students haven't spun the wheel yet.
+        Please login later to see full group details.
+      </div>
+    `;
   }
+
   content.innerHTML=html;
 }
 
+/* ---------- LOGOUT ---------- */
 function logout(){
+  logoutBtn.style.display="none";
+
+  content.innerHTML=`
+    <div class="status-red">
+      Logging out… Please wait.
+    </div>
+  `;
+
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({ action:"logout", token })
-  }).finally(()=>location.href="login.html");
+  }).finally(()=>{
+    location.href="login.html";
+  });
 }
 </script>
 
