@@ -6,8 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{box-sizing:border-box}
-
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
@@ -17,8 +15,6 @@ body{
   flex-direction:column;
   align-items:center;
 }
-
-/* ---------- MAIN CARD ---------- */
 .card{
   background:#fff;
   width:100%;
@@ -28,55 +24,25 @@ body{
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-
 h1{font-size:15px;text-align:center;color:#203a43;margin:0;}
 h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
-
-#loading{
-  text-align:center;
-  font-size:15px;
-  color:#555;
-  margin:30px 0;
-}
-
-/* ---------- COUNTDOWN ---------- */
+#loading{text-align:center;font-size:15px;color:#555;margin:30px 0;}
 .countdown{
-  background:#fff8e1;
-  color:#6d4c41;
-  padding:10px;
-  border-radius:10px;
-  text-align:center;
-  font-size:14px;
-  font-weight:600;
+  background:#fff8e1;color:#6d4c41;padding:10px;
+  border-radius:10px;text-align:center;
+  font-size:14px;font-weight:600;
 }
-
-/* ---------- BLINK MESSAGE ---------- */
 .blink{
-  text-align:center;
-  font-size:14px;
-  margin:12px 0;
+  text-align:center;font-size:14px;margin:12px 0;
   animation:blinkColors 2s infinite;
 }
 @keyframes blinkColors{
-  0%{color:#1abc9c;}
-  25%{color:#3498db;}
-  50%{color:#9b59b6;}
-  75%{color:#e67e22;}
+  0%{color:#1abc9c;}25%{color:#3498db;}
+  50%{color:#9b59b6;}75%{color:#e67e22;}
   100%{color:#1abc9c;}
 }
-
-/* ---------- WHEEL ---------- */
-#wheelWrap{
-  display:flex;
-  justify-content:center;
-  margin:16px 0;
-}
-canvas{
-  width:240px;
-  height:240px;
-}
-
-/* ---------- BUTTONS ---------- */
+#wheelWrap{display:flex;justify-content:center;margin:18px 0;}
+canvas{max-width:260px}
 button{
   width:100%;
   padding:12px;
@@ -87,48 +53,24 @@ button{
   cursor:pointer;
   margin-top:12px;
 }
-
-.btn-primary{
-  background:linear-gradient(135deg,#2c5364,#203a43);
-  color:#fff;
-}
-
-.btn-seminar{
-  background:linear-gradient(135deg,#1565c0,#0d47a1);
-  color:#fff;
-}
-
-.btn-logout{
-  background:#c0392b;
-  color:#fff;
-}
-
+.btn-primary{background:linear-gradient(135deg,#2c5364,#203a43);color:#fff;}
+.btn-seminar{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;}
+.btn-logout{background:#c0392b;color:#fff;}
 .btn-close{
   background:linear-gradient(135deg,#757575,#616161);
   color:#fff;
 }
-
-.btn-close:disabled{
-  background:#bdbdbd;
-  cursor:not-allowed;
+.btn-close:hover{
+  background:linear-gradient(135deg,#616161,#424242);
 }
-
 button:disabled{
-  background:#9e9e9e;
+  background:#999;
   cursor:not-allowed;
 }
-
-/* ---------- STATUS ---------- */
-.status{
-  margin-top:12px;
-  text-align:center;
-  font-size:14px;
-}
+.status{margin-top:12px;text-align:center;font-size:14px}
 .yellow{color:#f57f17;}
 .green{color:#1b5e20;}
 .red{color:#b71c1c;}
-
-/* ---------- RESULT BOX ---------- */
 .infoBox{
   background:#f5f7fa;
   border-radius:12px;
@@ -136,8 +78,6 @@ button:disabled{
   margin-top:16px;
   font-size:14px;
 }
-
-/* ---------- FOOTER ---------- */
 .footer{
   margin:12px 0 20px;
   text-align:center;
@@ -145,7 +85,7 @@ button:disabled{
   color:#e0e0e0;
 }
 
-/* ---------- MODAL ---------- */
+/* MODAL */
 .modal{
   position:fixed;
   inset:0;
@@ -154,52 +94,88 @@ button:disabled{
   justify-content:center;
   align-items:center;
 }
-
 .modal-box{
   background:#fff;
   width:calc(100% - 32px);
-  max-width:400px;
+  max-width:420px;
   border-radius:14px;
-  padding:20px;
+  padding:22px;
 }
-
 textarea{
   width:100%;
-  min-height:80px;
+  min-height:90px;
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
-
 .instruction{
   margin-top:8px;
   font-size:13px;
   color:#b71c1c;
 }
-
 .modal-actions{
   display:flex;
   gap:10px;
   margin-top:14px;
 }
+  /* ---------- MOBILE RESPONSIVENESS FIX ---------- */
+*{
+  box-sizing: border-box;
+}
 
-/* ---------- MOBILE FIX ---------- */
-@media (max-width:480px){
+@media (max-width: 480px){
+
   .card{
     padding:16px;
     margin:16px 8px;
   }
+
+  h1{ font-size:14px; }
+  h2{ font-size:13px; }
+
+  /* Wheel scaling */
+  #wheelWrap{
+    margin:12px 0;
+  }
+
   canvas{
-    width:210px;
-    height:210px;
+    width:220px !important;
+    height:220px !important;
   }
+
+  button{
+    font-size:14px;
+    padding:10px;
+  }
+
+  .infoBox{
+    font-size:13px;
+    padding:12px;
+  }
+
+  .countdown{
+    font-size:13px;
+    padding:8px;
+  }
+
+  .blink{
+    font-size:13px;
+  }
+
+  /* Modal adjustments */
   .modal-box{
-    max-width:340px;
     padding:16px;
+    max-width:360px;
   }
+
   textarea{
     min-height:70px;
     font-size:13px;
+  }
+
+  .modal-actions button{
+    font-size:14px;
+    padding:10px;
   }
 }
 </style>
@@ -214,6 +190,7 @@ textarea{
   <div id="loading">Loading, please wait…</div>
 
   <div id="content" style="display:none">
+
     <div class="countdown">
       ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
     </div>
@@ -231,7 +208,7 @@ textarea{
     <div id="status" class="status"></div>
     <div id="resultBox" class="infoBox" style="display:none"></div>
 
-    <button id="seminarBtn" class="btn-seminar" disabled onclick="openModal()">Submit / Edit Seminar Topic</button>
+    <button id="seminarBtn" class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
     <button id="logoutBtn" class="btn-logout" onclick="logout()">Logout</button>
   </div>
 </div>
@@ -241,7 +218,6 @@ textarea{
   <div>© 2026 · IIEST Shibpur</div>
 </div>
 
-<!-- ---------- MODAL ---------- -->
 <div class="modal" id="modal">
   <div class="modal-box">
     <h3>Seminar Topic</h3>
@@ -258,13 +234,13 @@ textarea{
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
-const token=new URLSearchParams(location.search).get("token");
+const BACKEND = "https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
+const token = new URLSearchParams(location.search).get("token");
 
-let angle=0,spinning=false;
+let angle=0, spinning=false;
 
 /* ---------- UI LOCK ---------- */
-function disableAll(msg){
+function disableAllActions(msg){
   spinBtn.disabled=true;
   seminarBtn.disabled=true;
   logoutBtn.disabled=true;
@@ -274,18 +250,18 @@ function disableAll(msg){
 
 /* ---------- INIT ---------- */
 drawWheel();
-loadDashboard();
+loadAll();
 
-/* ---------- DASHBOARD ---------- */
-function loadDashboard(){
+/* ---------- LOAD DATA ---------- */
+function loadAll(){
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({action:"dashboard",token})
-  }).then(r=>r.json()).then(res=>{
+    body:new URLSearchParams({ action:"dashboard", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
     loading.style.display="none";
     content.style.display="block";
-
-    if(res.deadline) startCountdown(res.deadline);
 
     if(res.status==="ASSIGNED"){
       wheelWrap.style.display="none";
@@ -293,6 +269,17 @@ function loadDashboard(){
       spinMsg.style.display="none";
       showResult(res);
     }
+  });
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"getSeminarTopic", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.deadline) startCountdown(res.deadline);
+    if(res.topic) topicInput.value=res.topic;
+    if(!res.editable) saveBtn.disabled=true;
   });
 }
 
@@ -318,12 +305,12 @@ function startCountdown(deadline){
 /* ---------- WHEEL ---------- */
 function drawWheel(){
   const c=wheel.getContext("2d");
-  c.clearRect(0,0,240,240);
+  c.clearRect(0,0,260,260);
   for(let i=0;i<9;i++){
     c.beginPath();
-    c.moveTo(120,120);
+    c.moveTo(130,130);
     c.fillStyle=i%2?"#90caf9":"#bbdefb";
-    c.arc(120,120,110,
+    c.arc(130,130,120,
       (i*40+angle)*Math.PI/180,
       ((i+1)*40+angle)*Math.PI/180);
     c.fill();
@@ -334,7 +321,7 @@ function drawWheel(){
 function spin(){
   if(spinning) return;
   spinning=true;
-  disableAll("Allocating group topic, please wait…");
+  disableAllActions("Allocating group topic, please wait…");
 
   let stop=Math.random()*360+2160;
   let id=setInterval(()=>{
@@ -342,8 +329,10 @@ function spin(){
     drawWheel();
     if(angle>=stop){
       clearInterval(id);
-      status.innerText="Assigning topic, please wait…";
-      allocate();
+      requestAnimationFrame(()=>{
+        status.innerText="Assigning topic, please wait…";
+        allocate();
+      });
     }
   },30);
 }
@@ -352,8 +341,10 @@ function spin(){
 function allocate(){
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({action:"assign",token})
-  }).then(r=>r.json()).then(res=>{
+    body:new URLSearchParams({ action:"assign", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
     status.innerText="";
     wheelWrap.style.display="none";
     spinMsg.style.display="none";
@@ -363,7 +354,7 @@ function allocate(){
 
 /* ---------- RESULT ---------- */
 function showResult(res){
-  let html=`<b>Assigned Topic:</b><br>${res.projectName}<br><br><b>Group Members:</b><br>`;
+  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
   res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
   if(!res.complete){
     html+=`<div class="red" style="margin-top:8px">
@@ -372,7 +363,6 @@ function showResult(res){
   }
   resultBox.innerHTML=html;
   resultBox.style.display="block";
-
   seminarBtn.disabled=false;
   logoutBtn.disabled=false;
 }
@@ -396,23 +386,29 @@ function saveTopic(){
       token,
       topic:topicInput.value
     })
-  }).then(()=>{
-    topicStatus.className="status green";
-    topicStatus.innerText="Saved successfully";
-    closeBtn.disabled=false;
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="SAVED"){
+      topicStatus.className="status green";
+      topicStatus.innerText="Saved successfully";
+      closeBtn.disabled=false;
+    }
   });
 }
 
 /* ---------- LOGOUT ---------- */
 function logout(){
-  disableAll("Logging out, please wait…");
+  disableAllActions("Logging out, please wait…");
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       setTimeout(()=>{
         fetch(BACKEND,{
           method:"POST",
-          body:new URLSearchParams({action:"logout",token})
-        }).finally(()=>location.href="login.html");
+          body:new URLSearchParams({ action:"logout", token })
+        }).finally(()=>{
+          location.href="login.html";
+        });
       },800);
     });
   });
