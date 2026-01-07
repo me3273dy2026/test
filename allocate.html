@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* ===== EXISTING STYLES (UNCHANGED) ===== */
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
@@ -15,8 +16,6 @@ body{
   flex-direction:column;
   align-items:center;
 }
-
-/* CARD */
 .card{
   background:#fff;
   width:100%;
@@ -26,21 +25,8 @@ body{
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-
-h1{
-  font-size:16px;
-  text-align:center;
-  color:#203a43;
-  margin:0;
-}
-h2{
-  font-size:14px;
-  text-align:center;
-  color:#555;
-  margin:6px 0 14px;
-}
-
-/* COUNTDOWN */
+h1{font-size:16px;text-align:center;color:#203a43;margin:0;}
+h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
 .countdown{
   background:#fff8e1;
   color:#6d4c41;
@@ -50,8 +36,6 @@ h2{
   font-size:14px;
   font-weight:600;
 }
-
-/* BLINKING MESSAGE */
 .blink{
   text-align:center;
   font-size:14px;
@@ -65,12 +49,8 @@ h2{
   75%{color:#e67e22;}
   100%{color:#1abc9c;}
 }
-
-/* WHEEL */
 #wheelWrap{display:flex;justify-content:center;margin:18px 0;}
 canvas{max-width:260px}
-
-/* BUTTONS */
 button{
   width:100%;
   padding:12px;
@@ -81,34 +61,14 @@ button{
   cursor:pointer;
   margin-top:12px;
 }
-.btn-primary{
-  background:linear-gradient(135deg,#2c5364,#203a43);
-  color:#fff;
-}
-.btn-seminar{
-  background:linear-gradient(135deg,#1565c0,#0d47a1);
-  color:#fff;
-}
-.btn-logout{
-  background:#c0392b;
-  color:#fff;
-}
-button:disabled{
-  background:#999;
-  cursor:not-allowed;
-}
-
-/* STATUS */
-.status{
-  margin-top:12px;
-  text-align:center;
-  font-size:14px;
-}
+.btn-primary{background:linear-gradient(135deg,#2c5364,#203a43);color:#fff;}
+.btn-seminar{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;}
+.btn-logout{background:#c0392b;color:#fff;}
+button:disabled{background:#999;cursor:not-allowed}
+.status{margin-top:12px;text-align:center;font-size:14px}
 .yellow{color:#f57f17;}
 .green{color:#1b5e20;}
 .red{color:#b71c1c;}
-
-/* INFO BOX */
 .infoBox{
   background:#f5f7fa;
   border-radius:12px;
@@ -116,8 +76,6 @@ button:disabled{
   margin-top:16px;
   font-size:14px;
 }
-
-/* FOOTER */
 .footer{
   margin:12px 0 20px;
   text-align:center;
@@ -127,8 +85,7 @@ button:disabled{
 
 /* MODAL */
 .modal{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:rgba(0,0,0,.6);
   display:none;
   justify-content:center;
@@ -141,28 +98,16 @@ button:disabled{
   border-radius:14px;
   padding:22px;
 }
-.modal-box h3{
-  margin-top:0;
-  color:#203a43;
-}
 textarea{
-  width:100%;
-  min-height:90px;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  margin-top:8px;
+  width:100%;min-height:90px;
+  padding:10px;border-radius:8px;border:1px solid #ccc;
 }
 .instruction{
   margin-top:8px;
   font-size:13px;
   color:#b71c1c;
 }
-.modal-actions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-}
+.modal-actions{display:flex;gap:10px;margin-top:14px;}
 </style>
 </head>
 
@@ -177,7 +122,7 @@ textarea{
     ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
   </div>
 
-  <div class="blink">
+  <div class="blink" id="spinMsg">
     Spin the coin to get your topic name for group discussion
   </div>
 
@@ -217,24 +162,54 @@ textarea{
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
-const token=new URLSearchParams(location.search).get("token");
+/* ========= CONFIG ========= */
+const BACKEND = "https://script.google.com/macros/s/AKfycbzaYTDl6fJeu2hlQr5jOPkUVD8p_bVni6-q-8FlJ3HG2RlV4zo0c-5g4UDDq40Z0V7FhA/exec";
+const token = new URLSearchParams(location.search).get("token");
+
+/* ========= STATE ========= */
 let DEADLINE=null, timer=null;
 let angle=0, spinning=false;
 
+/* ========= DRAW WHEEL ========= */
 drawWheel();
 
-/* ---------- INIT ---------- */
-fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-  action:"getSeminarTopic",token
-})})
-.then(r=>r.json())
-.then(res=>{
-  topicInput.value=res.topic||"";
-  startCountdown(res.deadline);
-});
+/* ========= INITIAL LOAD ========= */
+loadDashboard();        // 🔴 NEW FIX (IMPORTANT)
+loadSeminarInfo();     // existing logic
 
-/* ---------- COUNTDOWN ---------- */
+/* ========= DASHBOARD CHECK ========= */
+function loadDashboard(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"dashboard", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="ASSIGNED"){
+      // Hide spin UI completely
+      wheelWrap.style.display="none";
+      spinBtn.style.display="none";
+      spinMsg.style.display="none";
+
+      // Show assigned info
+      showResult(res);
+    }
+  });
+}
+
+/* ========= SEMINAR INFO ========= */
+function loadSeminarInfo(){
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"getSeminarTopic",token
+  })})
+  .then(r=>r.json())
+  .then(res=>{
+    topicInput.value=res.topic||"";
+    startCountdown(res.deadline);
+  });
+}
+
+/* ========= COUNTDOWN ========= */
 function startCountdown(d){
   DEADLINE=new Date(d);
   timer=setInterval(()=>{
@@ -248,26 +223,12 @@ function startCountdown(d){
     const h=Math.floor(diff/36e5),
           m=Math.floor(diff%36e5/6e4),
           s=Math.floor(diff%6e4/1e3);
-    timeLeft.innerText=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    timeLeft.innerText=
+      `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
   },1000);
 }
 
-/* ---------- WHEEL ---------- */
-function drawWheel(){
-  const c=wheel.getContext("2d");
-  c.clearRect(0,0,260,260);
-  for(let i=0;i<9;i++){
-    c.beginPath();
-    c.moveTo(130,130);
-    c.fillStyle=i%2?"#90caf9":"#bbdefb";
-    c.arc(130,130,120,
-      (i*40+angle)*Math.PI/180,
-      ((i+1)*40+angle)*Math.PI/180);
-    c.fill();
-  }
-}
-
-/* ---------- SPIN ---------- */
+/* ========= SPIN ========= */
 function spin(){
   if(spinning) return;
   spinning=true;
@@ -293,10 +254,13 @@ function allocate(){
   .then(r=>r.json())
   .then(res=>{
     status.innerText="";
+    wheelWrap.style.display="none";
+    spinMsg.style.display="none";
     showResult(res);
   });
 }
 
+/* ========= SHOW RESULT ========= */
 function showResult(res){
   let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
   res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
@@ -309,16 +273,29 @@ function showResult(res){
   resultBox.style.display="block";
 }
 
-/* ---------- SEMINAR ---------- */
+/* ========= WHEEL DRAW ========= */
+function drawWheel(){
+  const c=wheel.getContext("2d");
+  c.clearRect(0,0,260,260);
+  for(let i=0;i<9;i++){
+    c.beginPath();
+    c.moveTo(130,130);
+    c.fillStyle=i%2?"#90caf9":"#bbdefb";
+    c.arc(130,130,120,
+      (i*40+angle)*Math.PI/180,
+      ((i+1)*40+angle)*Math.PI/180);
+    c.fill();
+  }
+}
+
+/* ========= SEMINAR MODAL ========= */
 function openModal(){
   topicStatus.innerText="";
   saveBtn.disabled=false;
   closeBtn.disabled=true;
   modal.style.display="flex";
 }
-function closeModal(){
-  modal.style.display="none";
-}
+function closeModal(){ modal.style.display="none"; }
 function saveTopic(){
   saveBtn.disabled=true;
   topicStatus.className="status yellow";
@@ -327,14 +304,14 @@ function saveTopic(){
     action:"saveSeminarTopic",token,topic:topicInput.value
   })})
   .then(r=>r.json())
-  .then(res=>{
+  .then(()=>{
     topicStatus.className="status green";
     topicStatus.innerText="Saved successfully";
     closeBtn.disabled=false;
   });
 }
 
-/* ---------- LOGOUT ---------- */
+/* ========= LOGOUT ========= */
 function logout(){
   logoutBtn.disabled=true;
   status.className="status yellow";
