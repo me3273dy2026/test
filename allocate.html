@@ -12,20 +12,21 @@ body{
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   min-height:100vh;
   display:flex;
-  justify-content:center;
+  flex-direction:column;
+  align-items:center;
 }
 .card{
   background:#ffffff;
-  width:100%;
-  max-width:650px;
-  margin:20px;
+  width:92%;
+  max-width:520px;
+  margin-top:30px;
   padding:22px;
   border-radius:18px;
-  box-shadow:0 20px 45px rgba(0,0,0,.28);
+  box-shadow:0 18px 40px rgba(0,0,0,.25);
 }
 .header{
   text-align:center;
-  font-size:16px;
+  font-size:15.5px;
   font-weight:600;
   color:#203a43;
 }
@@ -33,53 +34,83 @@ body{
   text-align:center;
   font-size:13px;
   color:#666;
-  margin-bottom:18px;
+  margin-bottom:16px;
 }
 .info-box{
-  background:#f7f9fb;
-  border-left:5px solid #2c5364;
+  background:#f4f7fa;
   padding:14px 16px;
-  border-radius:10px;
+  border-radius:12px;
   margin-bottom:14px;
 }
 .info-title{
-  font-size:13px;
+  font-size:12px;
   font-weight:700;
   color:#2c5364;
   margin-bottom:6px;
   text-transform:uppercase;
 }
 .info-content{
-  font-size:15px;
+  font-size:14.5px;
   color:#222;
 }
 .status-box{
   background:#eef2f5;
   padding:12px;
-  border-radius:10px;
+  border-radius:12px;
   text-align:center;
   font-size:14px;
   font-weight:600;
   color:#555;
+  margin-top:12px;
+}
+
+/* ---------- WHEEL ---------- */
+.wheel-wrap{
+  position:relative;
+  width:240px;
+  height:240px;
+  margin:18px auto;
 }
 #wheel{
-  width:220px;height:220px;
-  margin:18px auto;
+  width:100%;
+  height:100%;
   border-radius:50%;
   border:6px solid #203a43;
   background:conic-gradient(
-    #1abc9c,#3498db,#9b59b6,#e67e22,#e74c3c,
-    #f1c40f,#16a085,#2980b9,#8e44ad
+    #1abc9c 0deg 40deg,
+    #3498db 40deg 80deg,
+    #9b59b6 80deg 120deg,
+    #e67e22 120deg 160deg,
+    #e74c3c 160deg 200deg,
+    #f1c40f 200deg 240deg,
+    #16a085 240deg 280deg,
+    #2980b9 280deg 320deg,
+    #8e44ad 320deg 360deg
   );
   transition:transform 4s cubic-bezier(.25,.1,.25,1);
 }
-#pointer{
+.pointer{
+  position:absolute;
+  top:-12px;
+  left:50%;
+  transform:translateX(-50%);
   width:0;height:0;
-  margin:0 auto;
   border-left:10px solid transparent;
   border-right:10px solid transparent;
   border-bottom:18px solid #c0392b;
 }
+.wheel-label{
+  position:absolute;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
 .center{text-align:center;}
 button{
   padding:12px 26px;
@@ -95,18 +126,19 @@ button:disabled{
   background:#aaa;
   cursor:not-allowed;
 }
+
+/* ---------- OUTSIDE CARD ---------- */
 .logout{
-  margin-top:24px;
-  text-align:center;
+  margin-top:18px;
 }
 .logout button{
   background:#c0392b;
 }
 .footer{
-  margin-top:26px;
+  margin-top:14px;
   text-align:center;
   font-size:12px;
-  color:#777;
+  color:#e0e0e0;
 }
 .footer div{margin-top:2px;}
 </style>
@@ -119,17 +151,17 @@ button:disabled{
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
 
   <div id="content" class="status-box">
-    Checking your allocation status…
+    Checking allocation status…
   </div>
+</div>
 
-  <div class="logout">
-    <button id="logoutBtn" onclick="logout()">Logout</button>
-  </div>
+<div class="logout">
+  <button id="logoutBtn" onclick="logout()">Logout</button>
+</div>
 
-  <div class="footer">
-    Developed by Rajesh Akula
-    <div>© 2026 · IIEST Shibpur</div>
-  </div>
+<div class="footer">
+  Developed by Rajesh Akula
+  <div>© 2026 · IIEST Shibpur</div>
 </div>
 
 <script>
@@ -142,12 +174,11 @@ const header  = document.getElementById("header");
 const logoutBtn = document.getElementById("logoutBtn");
 
 if(!token){
-  content.innerHTML="<b>Invalid session. Please login again.</b>";
+  content.innerHTML="Invalid session.";
 }else{
   checkStatus();
 }
 
-/* -------- CHECK STATUS FIRST -------- */
 function checkStatus(){
   fetch(BACKEND_URL,{
     method:"POST",
@@ -156,41 +187,38 @@ function checkStatus(){
   .then(r=>r.json())
   .then(res=>{
     if(res.status==="ASSIGNED"){
-      showAssigned(res.project, res.team, res.name, res.roll, res.complete);
+      showAssigned(res.project, res.projectName, res.team, res.name, res.roll, res.complete);
     }else{
       showWheel();
     }
-  })
-  .catch(()=>{
-    content.innerHTML="Unable to load. Please refresh.";
   });
 }
 
-/* -------- SHOW WHEEL -------- */
 function showWheel(){
   header.innerText="Welcome!";
   content.innerHTML=`
-    <div id="pointer"></div>
-    <div id="wheel"></div>
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <div id="wheel"></div>
+    </div>
     <div class="center">
       <button id="spinBtn" onclick="spin()">Spin the Wheel</button>
     </div>
   `;
 }
 
-/* -------- SPIN -------- */
 function spin(){
-  const btn = document.getElementById("spinBtn");
-  btn.disabled = true;
+  const btn=document.getElementById("spinBtn");
+  btn.disabled=true;
+
   content.innerHTML += `<div class="status-box">Allocating topic… Please wait.</div>`;
 
-  document.getElementById("wheel").style.transform =
-    `rotate(${360*6 + Math.random()*360}deg)`;
+  const wheel=document.getElementById("wheel");
+  wheel.style.transform = `rotate(${360*5 + Math.random()*360}deg)`;
 
-  setTimeout(assignTopic, 4200);
+  setTimeout(assignTopic,4200);
 }
 
-/* -------- ASSIGN -------- */
 function assignTopic(){
   fetch(BACKEND_URL,{
     method:"POST",
@@ -198,19 +226,18 @@ function assignTopic(){
   })
   .then(r=>r.json())
   .then(res=>{
-    showAssigned(res.project, res.team, "", "", res.complete);
+    showAssigned(res.project, res.projectName, res.team, "", "", res.complete);
   });
 }
 
-/* -------- SHOW ASSIGNED -------- */
-function showAssigned(topic, team, name, roll, complete){
+function showAssigned(topicID, topicName, team, name, roll, complete){
   const me = team[0];
   header.innerText = `Welcome ${name || me.name} (${roll || me.roll})`;
 
   let html = `
     <div class="info-box">
       <div class="info-title">Assigned Topic</div>
-      <div class="info-content">${topic}</div>
+      <div class="info-content">${topicID} – ${topicName}</div>
     </div>
 
     <div class="info-box">
@@ -233,11 +260,8 @@ function showAssigned(topic, team, name, roll, complete){
   content.innerHTML = html;
 }
 
-/* -------- LOGOUT -------- */
 function logout(){
-  logoutBtn.disabled = true;
-  content.innerHTML = `<div class="status-box">Logging out… Please wait.</div>`;
-
+  logoutBtn.disabled=true;
   fetch(BACKEND_URL,{
     method:"POST",
     body:new URLSearchParams({ action:"logout", token })
