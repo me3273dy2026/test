@@ -262,7 +262,10 @@ function loadAll(){
   .then(res=>{
     loading.style.display="none";
     content.style.display="block";
-
+    if(res.name && res.roll){
+      document.getElementById("welcome").innerText =
+        `Welcome ${res.name} (${res.roll})`;
+    }
     if(res.status==="ASSIGNED"){
       wheelWrap.style.display="none";
       spinBtn.style.display="none";
