@@ -11,38 +11,20 @@ body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
+  display:flex;justify-content:center;
 }
 .card{
   background:#fff;
-  width:100%;
-  max-width:600px;
-  margin:20px;
-  padding:20px;
+  width:100%;max-width:600px;
+  margin:20px;padding:20px;
   border-radius:16px;
   box-shadow:0 20px 40px rgba(0,0,0,.25);
 }
-h1{color:#203a43;text-align:center;}
-.sub{color:#666;text-align:center;font-size:14px;margin-bottom:15px;}
-button{
-  padding:12px 24px;
-  border:none;
-  border-radius:30px;
-  font-size:15px;
-  font-weight:600;
-  color:#fff;
-  background:linear-gradient(135deg,#2c5364,#203a43);
-  cursor:pointer;
-}
-button:disabled{background:#aaa;}
-#wheelBox{text-align:center;margin-top:20px;}
+h1{text-align:center;color:#203a43;}
+.sub{text-align:center;color:#666;font-size:14px;margin-bottom:15px;}
 #wheel{
-  width:240px;height:240px;
-  margin:0 auto;
-  border-radius:50%;
-  border:6px solid #203a43;
+  width:240px;height:240px;margin:20px auto;
+  border-radius:50%;border:6px solid #203a43;
   background:conic-gradient(
     #1abc9c,#3498db,#9b59b6,#e67e22,#e74c3c,
     #f1c40f,#16a085,#2980b9,#8e44ad
@@ -50,20 +32,24 @@ button:disabled{background:#aaa;}
   transition:transform 4s cubic-bezier(.25,.1,.25,1);
 }
 #pointer{
-  width:0;height:0;
-  margin:0 auto;
+  width:0;height:0;margin:0 auto;
   border-left:10px solid transparent;
   border-right:10px solid transparent;
   border-bottom:18px solid #c0392b;
 }
-.section{margin-top:20px;}
-.logout{
-  margin-top:25px;
-  text-align:center;
+button{
+  padding:12px 24px;border:none;border-radius:30px;
+  background:linear-gradient(135deg,#2c5364,#203a43);
+  color:#fff;font-size:15px;font-weight:600;
+  cursor:pointer;
 }
-.logout button{
-  background:#c0392b;
+.section{margin-top:18px;}
+.warn{color:#c0392b;font-weight:600;margin-top:10px;}
+.footer{
+  margin-top:30px;font-size:12px;color:#777;text-align:center;
 }
+.logout{text-align:center;margin-top:25px;}
+.logout button{background:#c0392b;}
 </style>
 </head>
 
@@ -78,91 +64,84 @@ button:disabled{background:#aaa;}
   <div class="logout">
     <button onclick="logout()">Logout</button>
   </div>
+
+  <div class="footer">
+    Developed by Rajesh Akula · IIEST Shibpur
+  </div>
 </div>
 
 <script>
 const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbxAW8nEZQcGkNvv9XTWlG-OTZSM-IotYEioDfIghDHQEOrOq_-cRVzUcRvfsZZe_rZVKg/exec";
+"https://script.google.com/macros/s/AKfycbwBQJCxQHeKTUUpsFTxY1be58UvP0SEfg__Y9vlqMvpRHPOYvll2wDOiMt7VpImbEFIxw/exec";
 
-const token = new URLSearchParams(window.location.search).get("token");
-const content = document.getElementById("content");
+const token=new URLSearchParams(window.location.search).get("token");
+const content=document.getElementById("content");
 
 if(!token){
   content.innerHTML="<b>Invalid session. Please login again.</b>";
-} else {
-  loadDashboard();
-}
+}else loadDashboard();
 
 function loadDashboard(){
   fetch(BACKEND_URL,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"dashboard",
-      token:token
-    })
+    body:new URLSearchParams({action:"dashboard",token})
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.status==="NOT_ASSIGNED"){
-      showWheel();
-    } else if(res.status==="ASSIGNED"){
-      showDetails(res.project,res.team);
-    } else {
-      content.innerHTML="<b>Session expired. Please login again.</b>";
-    }
+    if(res.status==="NOT_ASSIGNED") showWheel();
+    else if(res.status==="ASSIGNED")
+      showDetails(res.name,res.roll,res.project,res.team,res.complete);
+    else content.innerHTML="<b>Session expired.</b>";
   });
 }
 
 function showWheel(){
   content.innerHTML=`
-    <div id="wheelBox">
-      <div id="pointer"></div>
-      <div id="wheel"></div><br>
+    <div id="pointer"></div>
+    <div id="wheel"></div>
+    <div style="text-align:center">
       <button onclick="spin()">SPIN & ASSIGN PROJECT</button>
-    </div>
-  `;
+    </div>`;
 }
 
 function spin(){
   const wheel=document.getElementById("wheel");
   wheel.style.transform=`rotate(${360*6+Math.random()*360}deg)`;
-
-  setTimeout(()=>{
-    fetch(BACKEND_URL,{
-      method:"POST",
-      body:new URLSearchParams({
-        action:"assign",
-        token:token
-      })
-    })
-    .then(r=>r.json())
-    .then(res=>{
-      if(res.status==="ASSIGNED"){
-        showDetails(res.project,res.team);
-      }
-    });
-  },4200);
+  setTimeout(assign,4200);
 }
 
-function showDetails(project,team){
-  let html=`<div class="section"><b>Assigned Project:</b><br>${project}</div>`;
-  html+=`<div class="section"><b>Team Members:</b><br>`;
-  team.forEach((s,i)=>{
-    html+=`${i+1}. ${s.name} (${s.roll})<br>`;
+function assign(){
+  fetch(BACKEND_URL,{
+    method:"POST",
+    body:new URLSearchParams({action:"assign",token})
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    showDetails("", "", res.project, res.team, res.complete);
   });
+}
+
+function showDetails(name,roll,project,team,complete){
+  let html=`
+    <div class="section"><b>Welcome ${name||team[0].name} (${roll||team[0].roll})</b></div>
+    <div class="section"><b>Assigned Project:</b><br>${project}</div>
+    <div class="section"><b>Team Members:</b><br>`;
+  team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
   html+=`</div>`;
+  if(!complete){
+    html+=`<div class="warn">
+      A few students haven't spun the wheel yet.
+      Please login later to see full team.
+    </div>`;
+  }
   content.innerHTML=html;
 }
 
 function logout(){
   fetch(BACKEND_URL,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"logout",
-      token:token
-    })
-  })
-  .then(()=>location.href="login.html");
+    body:new URLSearchParams({action:"logout",token})
+  }).then(()=>location.href="login.html");
 }
 </script>
 
