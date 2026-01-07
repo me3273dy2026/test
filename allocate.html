@@ -16,9 +16,9 @@ body{
   align-items:center;
 }
 
-/* ---------- MAIN CARD ---------- */
+/* CARD */
 .card{
-  background:#ffffff;
+  background:#fff;
   width:100%;
   max-width:520px;
   margin:24px 12px;
@@ -27,17 +27,20 @@ body{
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
 
-h1{font-size:17px;text-align:center;color:#203a43;margin:0;}
-h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
-
-.info{
+h1{
+  font-size:16px;
   text-align:center;
+  color:#203a43;
+  margin:0;
+}
+h2{
   font-size:14px;
-  margin-bottom:10px;
+  text-align:center;
   color:#555;
+  margin:6px 0 14px;
 }
 
-/* ---------- COUNTDOWN ---------- */
+/* COUNTDOWN */
 .countdown{
   background:#fff8e1;
   color:#6d4c41;
@@ -48,32 +51,64 @@ h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
   font-weight:600;
 }
 
-/* ---------- WHEEL ---------- */
+/* BLINKING MESSAGE */
+.blink{
+  text-align:center;
+  font-size:14px;
+  margin:12px 0;
+  animation:blinkColors 2s infinite;
+}
+@keyframes blinkColors{
+  0%{color:#1abc9c;}
+  25%{color:#3498db;}
+  50%{color:#9b59b6;}
+  75%{color:#e67e22;}
+  100%{color:#1abc9c;}
+}
+
+/* WHEEL */
 #wheelWrap{display:flex;justify-content:center;margin:18px 0;}
 canvas{max-width:260px}
 
-/* ---------- BUTTONS ---------- */
+/* BUTTONS */
 button{
   width:100%;
   padding:12px;
   border:none;
   border-radius:30px;
-  background:linear-gradient(135deg,#2c5364,#203a43);
-  color:#fff;
   font-size:15px;
   font-weight:600;
   cursor:pointer;
   margin-top:12px;
 }
-button:disabled{background:#999;cursor:not-allowed}
+.btn-primary{
+  background:linear-gradient(135deg,#2c5364,#203a43);
+  color:#fff;
+}
+.btn-seminar{
+  background:linear-gradient(135deg,#1565c0,#0d47a1);
+  color:#fff;
+}
+.btn-logout{
+  background:#c0392b;
+  color:#fff;
+}
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
 
-/* ---------- STATUS ---------- */
-.status{margin-top:14px;text-align:center;font-size:14px}
-.yellow{color:#f57f17}
-.green{color:#1b5e20}
-.red{color:#b71c1c}
+/* STATUS */
+.status{
+  margin-top:12px;
+  text-align:center;
+  font-size:14px;
+}
+.yellow{color:#f57f17;}
+.green{color:#1b5e20;}
+.red{color:#b71c1c;}
 
-/* ---------- INFO BOX ---------- */
+/* INFO BOX */
 .infoBox{
   background:#f5f7fa;
   border-radius:12px;
@@ -82,7 +117,7 @@ button:disabled{background:#999;cursor:not-allowed}
   font-size:14px;
 }
 
-/* ---------- FOOTER ---------- */
+/* FOOTER */
 .footer{
   margin:12px 0 20px;
   text-align:center;
@@ -90,22 +125,44 @@ button:disabled{background:#999;cursor:not-allowed}
   color:#e0e0e0;
 }
 
-/* ---------- MODAL ---------- */
+/* MODAL */
 .modal{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   background:rgba(0,0,0,.6);
-  display:none;justify-content:center;align-items:center;
+  display:none;
+  justify-content:center;
+  align-items:center;
 }
-.modal-content{
-  background:#fff;padding:22px;
-  width:90%;max-width:420px;
+.modal-box{
+  background:#fff;
+  width:90%;
+  max-width:420px;
   border-radius:14px;
+  padding:22px;
+}
+.modal-box h3{
+  margin-top:0;
+  color:#203a43;
 }
 textarea{
-  width:100%;min-height:80px;
-  padding:10px;border-radius:8px;border:1px solid #ccc;
+  width:100%;
+  min-height:90px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  margin-top:8px;
 }
-.warn{color:#b71c1c;font-size:13px;margin-top:8px}
+.instruction{
+  margin-top:8px;
+  font-size:13px;
+  color:#b71c1c;
+}
+.modal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
 </style>
 </head>
 
@@ -120,21 +177,21 @@ textarea{
     ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
   </div>
 
-  <div id="wheelSection">
-    <div class="info">
-      Spin the coin to get your topic name for group discussion
-    </div>
-    <div id="wheelWrap">
-      <canvas id="wheel" width="260" height="260"></canvas>
-    </div>
-    <button id="spinBtn" onclick="spin()">Spin the Coin</button>
+  <div class="blink">
+    Spin the coin to get your topic name for group discussion
   </div>
+
+  <div id="wheelWrap">
+    <canvas id="wheel" width="260" height="260"></canvas>
+  </div>
+
+  <button id="spinBtn" class="btn-primary" onclick="spin()">Spin the Coin</button>
 
   <div id="status" class="status"></div>
   <div id="resultBox" class="infoBox" style="display:none"></div>
 
-  <button id="seminarBtn" onclick="openModal()">Submit / Edit Seminar Topic</button>
-  <button id="logoutBtn" onclick="logout()">Logout</button>
+  <button class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
+  <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
 
 </div>
 
@@ -143,17 +200,19 @@ textarea{
   <div>© 2026 · IIEST Shibpur</div>
 </div>
 
-<!-- ---------- MODAL ---------- -->
+<!-- MODAL -->
 <div class="modal" id="modal">
-  <div class="modal-content">
+  <div class="modal-box">
     <h3>Seminar Topic</h3>
     <textarea id="topicInput"></textarea>
-    <div class="warn">
+    <div class="instruction">
       The topic should be technical and related to any trending research topic in mechanical engineering.
     </div>
-    <div class="status" id="topicStatus"></div>
-    <button id="saveBtn" onclick="saveTopic()">Save</button>
-    <button onclick="closeModal()">Cancel</button>
+    <div id="topicStatus" class="status"></div>
+    <div class="modal-actions">
+      <button id="saveBtn" class="btn-primary" onclick="saveTopic()">Save</button>
+      <button id="closeBtn" disabled onclick="closeModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -163,6 +222,19 @@ const token=new URLSearchParams(location.search).get("token");
 let DEADLINE=null, timer=null;
 let angle=0, spinning=false;
 
+drawWheel();
+
+/* ---------- INIT ---------- */
+fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+  action:"getSeminarTopic",token
+})})
+.then(r=>r.json())
+.then(res=>{
+  topicInput.value=res.topic||"";
+  startCountdown(res.deadline);
+});
+
+/* ---------- COUNTDOWN ---------- */
 function startCountdown(d){
   DEADLINE=new Date(d);
   timer=setInterval(()=>{
@@ -170,80 +242,18 @@ function startCountdown(d){
     if(diff<=0){
       timeLeft.innerText="Deadline passed";
       spinBtn.style.display="none";
-      seminarBtn.disabled=true;
-      clearInterval(timer);return;
+      saveBtn.disabled=true;
+      return;
     }
     const h=Math.floor(diff/36e5),
           m=Math.floor(diff%36e5/6e4),
           s=Math.floor(diff%6e4/1e3);
-    timeLeft.innerText=
-      `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    timeLeft.innerText=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
   },1000);
 }
 
-function spin(){
-  if(spinning) return;
-  spinning=true;
-  spinBtn.disabled=true;
-  status.className="status yellow";
-  status.innerText="Allocating group topic, please wait…";
-
-  let stop=Math.random()*360+2160;
-  let id=setInterval(()=>{
-    angle+=20;
-    draw();
-    if(angle>=stop){
-      clearInterval(id);
-      allocate();
-    }
-  },30);
-}
-
-function allocate(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"assign",token})})
-  .then(r=>r.json()).then(res=>{
-    status.innerText="";
-    showResult(res.project,res.projectName,res.team,res.complete);
-  });
-}
-
-function showResult(pid,pname,team,complete){
-  let html=`<b>Assigned Topic:</b><br>${pid} – ${pname}<br><br><b>Group Members:</b><br>`;
-  team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
-  if(!complete){
-    html+=`<div class="red" style="margin-top:8px">
-      A few students haven't spun the wheel yet. Please login later to see full group details.
-    </div>`;
-  }
-  resultBox.innerHTML=html;
-  resultBox.style.display="block";
-}
-
-function logout(){
-  logoutBtn.disabled=true;
-  status.className="status yellow";
-  status.innerText="Logging out, please wait…";
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
-  .finally(()=>location.href="login.html");
-}
-
-function openModal(){modal.style.display="flex";}
-function closeModal(){modal.style.display="none";}
-
-function saveTopic(){
-  saveBtn.disabled=true;
-  topicStatus.className="status yellow";
-  topicStatus.innerText="Submitting…";
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"saveSeminarTopic",token,topic:topicInput.value
-  })})
-  .then(r=>r.json()).then(res=>{
-    topicStatus.className="status green";
-    topicStatus.innerText="Seminar topic submitted successfully";
-  });
-}
-
-function draw(){
+/* ---------- WHEEL ---------- */
+function drawWheel(){
   const c=wheel.getContext("2d");
   c.clearRect(0,0,260,260);
   for(let i=0;i<9;i++){
@@ -255,6 +265,84 @@ function draw(){
       ((i+1)*40+angle)*Math.PI/180);
     c.fill();
   }
+}
+
+/* ---------- SPIN ---------- */
+function spin(){
+  if(spinning) return;
+  spinning=true;
+  spinBtn.disabled=true;
+  status.className="status yellow";
+  status.innerText="Allocating group topic, please wait…";
+
+  let stop=Math.random()*360+2160;
+  let id=setInterval(()=>{
+    angle+=20;
+    drawWheel();
+    if(angle>=stop){
+      clearInterval(id);
+      allocate();
+    }
+  },30);
+}
+
+function allocate(){
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"assign",token
+  })})
+  .then(r=>r.json())
+  .then(res=>{
+    status.innerText="";
+    showResult(res);
+  });
+}
+
+function showResult(res){
+  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
+  res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
+  if(!res.complete){
+    html+=`<div class="red" style="margin-top:8px">
+      A few students haven't spun the wheel yet. Please login later to see full group details.
+    </div>`;
+  }
+  resultBox.innerHTML=html;
+  resultBox.style.display="block";
+}
+
+/* ---------- SEMINAR ---------- */
+function openModal(){
+  topicStatus.innerText="";
+  saveBtn.disabled=false;
+  closeBtn.disabled=true;
+  modal.style.display="flex";
+}
+function closeModal(){
+  modal.style.display="none";
+}
+function saveTopic(){
+  saveBtn.disabled=true;
+  topicStatus.className="status yellow";
+  topicStatus.innerText="Submitting…";
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"saveSeminarTopic",token,topic:topicInput.value
+  })})
+  .then(r=>r.json())
+  .then(res=>{
+    topicStatus.className="status green";
+    topicStatus.innerText="Saved successfully";
+    closeBtn.disabled=false;
+  });
+}
+
+/* ---------- LOGOUT ---------- */
+function logout(){
+  logoutBtn.disabled=true;
+  status.className="status yellow";
+  status.innerText="Logging out, please wait…";
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"logout",token
+  })})
+  .finally(()=>location.href="login.html");
 }
 </script>
 
