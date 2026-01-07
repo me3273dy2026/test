@@ -2,59 +2,71 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login | ME3273</title>
+<title>Project Allocation Login | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+*{box-sizing:border-box;}
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  margin:0;height:100vh;
+  height:100vh;margin:0;
   display:flex;justify-content:center;align-items:center;
 }
 .card{
   background:#fff;
-  width:100%;
-  max-width:400px;
-  padding:30px;
+  width:100%;max-width:420px;
+  padding:32px 30px;
   border-radius:14px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
+  animation:fadeIn .6s ease;
 }
-h1{text-align:center;color:#203a43;font-size:20px;}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+h1{text-align:center;color:#203a43;font-size:20px;margin-bottom:6px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:22px;}
 label{font-weight:600;margin-top:14px;display:block;}
 input{
-  width:100%;padding:10px;margin-top:6px;
-  border-radius:6px;border:1px solid #ccc;
+  width:100%;padding:10px 12px;margin-top:6px;
+  border-radius:6px;border:1px solid #ccc;font-size:15px;
 }
 button{
-  width:100%;margin-top:22px;padding:12px;
-  border:none;border-radius:30px;
+  margin-top:26px;width:100%;padding:12px;
   background:linear-gradient(135deg,#2c5364,#203a43);
-  color:#fff;font-size:16px;font-weight:600;
-  cursor:pointer;
+  color:#fff;border:none;font-size:16px;
+  font-weight:600;border-radius:30px;cursor:pointer;
 }
-.msg{
-  margin-top:16px;
-  text-align:center;
-  font-weight:600;
+button:disabled{background:#999;cursor:not-allowed;}
+.msg{text-align:center;margin-top:18px;font-weight:600;}
+.loader{
+  border:4px solid #f3f3f3;
+  border-top:4px solid #2c5364;
+  border-radius:50%;
+  width:32px;height:32px;
+  margin:10px auto;
+  animation:spin 1s linear infinite;
 }
-.register{
-  text-align:center;
-  margin-top:12px;
-  font-size:13px;
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
 }
-.register a{
-  color:#2c5364;
-  text-decoration:none;
-  font-weight:600;
+.register{text-align:center;margin-top:12px;font-size:13px;}
+.register a{color:#2c5364;font-weight:600;text-decoration:none;}
+.footer{
+  margin-top:26px;text-align:center;
+  font-size:13px;color:#5f6f78;font-weight:600;
 }
+.footer span{font-size:12px;color:#7a8a93;}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-  <h1>ME3273 Login</h1>
+  <h1>Project Allocation</h1>
+  <h2>Group Discussion & Seminar (ME3273)</h2>
 
   <label>Roll Number</label>
   <input id="roll">
@@ -62,35 +74,41 @@ button{
   <label>Date of Birth</label>
   <input type="date" id="dob">
 
-  <button onclick="login()">Login</button>
+  <button id="loginBtn" onclick="login()">Login</button>
 
   <div class="msg" id="msg"></div>
 
   <div class="register">
     Not registered?
     <a href="https://me3273dy2026.github.io/Reg/" target="_blank">
-      Register here
+      Click here to register
     </a>
+  </div>
+
+  <div class="footer">
+    <strong>Developed by Rajesh Akula</strong>
+    <span>© 2026 · IIEST Shibpur</span>
   </div>
 </div>
 
 <script>
 const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbxAW8nEZQcGkNvv9XTWlG-OTZSM-IotYEioDfIghDHQEOrOq_-cRVzUcRvfsZZe_rZVKg/exec";
+"https://script.google.com/macros/s/AKfycbwBQJCxQHeKTUUpsFTxY1be58UvP0SEfg__Y9vlqMvpRHPOYvll2wDOiMt7VpImbEFIxw/exec";
 
 function login(){
+  const roll=document.getElementById("roll").value.trim().toUpperCase();
+  const dob=document.getElementById("dob").value;
+  const msg=document.getElementById("msg");
+  const btn=document.getElementById("loginBtn");
 
-  const roll = document.getElementById("roll").value.trim().toUpperCase();
-  const dob  = document.getElementById("dob").value;
-  const msg  = document.getElementById("msg");
-
-  msg.innerText = "";
-
-  if(!roll || !dob){
+  if(!roll||!dob){
     msg.style.color="red";
     msg.innerText="Enter Roll Number and DOB";
     return;
   }
+
+  btn.disabled=true;
+  msg.innerHTML='<div class="loader"></div>Authenticating…';
 
   fetch(BACKEND_URL,{
     method:"POST",
@@ -102,17 +120,18 @@ function login(){
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.status==="LOGIN_OK" || res.status==="ALREADY_ASSIGNED"){
-      window.location.href =
-        "allocate.html?token=" + encodeURIComponent(res.token);
-    } else {
+    if(res.token){
+      window.location.href="allocate.html?token="+res.token;
+    }else{
       msg.style.color="red";
       msg.innerText="Not registered";
+      btn.disabled=false;
     }
   })
   .catch(()=>{
     msg.style.color="red";
     msg.innerText="Server error";
+    btn.disabled=false;
   });
 }
 </script>
