@@ -76,7 +76,7 @@ button{
 
 <script>
 const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbyDrGsFVsYTxLyGkWLgEOQUDYCJXXeQur-7r8a9R59rWChtrxAtLFOt5pQU3C8oFftsCg/exec";
+  "https://script.google.com/macros/s/AKfycbxAW8nEZQcGkNvv9XTWlG-OTZSM-IotYEioDfIghDHQEOrOq_-cRVzUcRvfsZZe_rZVKg/exec";
 
 function login(){
 
@@ -87,33 +87,32 @@ function login(){
   msg.innerText = "";
 
   if(!roll || !dob){
-    msg.style.color = "red";
-    msg.innerText = "Enter Roll Number and DOB";
+    msg.style.color="red";
+    msg.innerText="Enter Roll Number and DOB";
     return;
   }
 
-  fetch(BACKEND_URL, {
-    method: "POST",
-    body: new URLSearchParams({
-      roll: roll,
-      dob: dob
+  fetch(BACKEND_URL,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"login",
+      roll:roll,
+      dob:dob
     })
   })
-  .then(r => r.json())
-  .then(res => {
-    if(res.status === "LOGIN_OK"){
-      // redirect to next page (STEP E)
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="LOGIN_OK" || res.status==="ALREADY_ASSIGNED"){
       window.location.href =
-        "allocate.html?roll=" + encodeURIComponent(roll) +
-        "&dob=" + encodeURIComponent(dob);
+        "allocate.html?token=" + encodeURIComponent(res.token);
     } else {
-      msg.style.color = "red";
-      msg.innerText = "Not registered";
+      msg.style.color="red";
+      msg.innerText="Not registered";
     }
   })
-  .catch(() => {
-    msg.style.color = "red";
-    msg.innerText = "Server error";
+  .catch(()=>{
+    msg.style.color="red";
+    msg.innerText="Server error";
   });
 }
 </script>
