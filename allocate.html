@@ -2,102 +2,67 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Project Allocation | ME3273</title>
+<title>Student Dashboard | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
-  height:100vh;
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  min-height:100vh;
   display:flex;
   justify-content:center;
-  align-items:center;
+  align-items:flex-start;
 }
 .card{
-  background:#ffffff;
+  background:#fff;
   width:100%;
   max-width:600px;
-  padding:30px;
-  border-radius:18px;
-  box-shadow:0 20px 45px rgba(0,0,0,.3);
-  text-align:center;
+  margin:20px;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
 }
-h1{
-  color:#203a43;
-  margin-bottom:10px;
-}
-.sub{
-  color:#666;
-  font-size:14px;
-  margin-bottom:20px;
-}
-#wheel-container{
-  position:relative;
-  width:280px;
-  height:280px;
-  margin:20px auto;
-}
-#wheel{
-  width:100%;
-  height:100%;
-  border-radius:50%;
-  border:8px solid #203a43;
-  background:conic-gradient(
-    #1abc9c 0deg 40deg,
-    #3498db 40deg 80deg,
-    #9b59b6 80deg 120deg,
-    #e67e22 120deg 160deg,
-    #e74c3c 160deg 200deg,
-    #f1c40f 200deg 240deg,
-    #16a085 240deg 280deg,
-    #2980b9 280deg 320deg,
-    #8e44ad 320deg 360deg
-  );
-  transition:transform 4s cubic-bezier(0.25,0.1,0.25,1);
-}
-#pointer{
-  position:absolute;
-  top:-18px;
-  left:50%;
-  transform:translateX(-50%);
-  width:0;height:0;
-  border-left:12px solid transparent;
-  border-right:12px solid transparent;
-  border-bottom:20px solid #c0392b;
-}
+h1{color:#203a43;text-align:center;}
+.sub{color:#666;text-align:center;font-size:14px;margin-bottom:15px;}
 button{
-  margin-top:20px;
-  padding:12px 30px;
+  padding:12px 24px;
   border:none;
   border-radius:30px;
-  font-size:16px;
+  font-size:15px;
   font-weight:600;
   color:#fff;
   background:linear-gradient(135deg,#2c5364,#203a43);
   cursor:pointer;
 }
-button:disabled{
-  background:#aaa;
-  cursor:not-allowed;
+button:disabled{background:#aaa;}
+#wheelBox{text-align:center;margin-top:20px;}
+#wheel{
+  width:240px;height:240px;
+  margin:0 auto;
+  border-radius:50%;
+  border:6px solid #203a43;
+  background:conic-gradient(
+    #1abc9c,#3498db,#9b59b6,#e67e22,#e74c3c,
+    #f1c40f,#16a085,#2980b9,#8e44ad
+  );
+  transition:transform 4s cubic-bezier(.25,.1,.25,1);
 }
-.result{
+#pointer{
+  width:0;height:0;
+  margin:0 auto;
+  border-left:10px solid transparent;
+  border-right:10px solid transparent;
+  border-bottom:18px solid #c0392b;
+}
+.section{margin-top:20px;}
+.logout{
   margin-top:25px;
-  text-align:left;
-}
-.result h3{
-  color:#203a43;
-}
-.team{
-  margin-top:10px;
-  padding-left:15px;
-}
-.footer{
-  margin-top:20px;
-  font-size:12px;
-  color:#777;
   text-align:center;
+}
+.logout button{
+  background:#c0392b;
 }
 </style>
 </head>
@@ -105,81 +70,99 @@ button:disabled{
 <body>
 
 <div class="card">
-  <h1>Project Allocation</h1>
+  <h1>Student Dashboard</h1>
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
 
-  <div id="wheel-container">
-    <div id="pointer"></div>
-    <div id="wheel"></div>
-  </div>
+  <div id="content">Loading…</div>
 
-  <button id="spinBtn" onclick="spin()">SPIN THE WHEEL</button>
-
-  <div class="result" id="result"></div>
-
-  <div class="footer">
-    Developed by Dr. Rajesh Akula · IIEST Shibpur
+  <div class="logout">
+    <button onclick="logout()">Logout</button>
   </div>
 </div>
 
 <script>
 const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbyDrGsFVsYTxLyGkWLgEOQUDYCJXXeQur-7r8a9R59rWChtrxAtLFOt5pQU3C8oFftsCg/exec";
+  "https://script.google.com/macros/s/AKfycbxAW8nEZQcGkNvv9XTWlG-OTZSM-IotYEioDfIghDHQEOrOq_-cRVzUcRvfsZZe_rZVKg/exec";
 
-const params = new URLSearchParams(window.location.search);
-const roll = params.get("roll");
-const dob  = params.get("dob");
+const token = new URLSearchParams(window.location.search).get("token");
+const content = document.getElementById("content");
 
-const wheel = document.getElementById("wheel");
-const btn = document.getElementById("spinBtn");
-const result = document.getElementById("result");
-
-let rotated = false;
-
-function spin(){
-
-  if(rotated) return;
-  rotated = true;
-  btn.disabled = true;
-
-  const rotation = 360*6 + Math.floor(Math.random()*360);
-  wheel.style.transform = `rotate(${rotation}deg)`;
-
-  setTimeout(assignProject, 4200);
+if(!token){
+  content.innerHTML="<b>Invalid session. Please login again.</b>";
+} else {
+  loadDashboard();
 }
 
-function assignProject(){
-
+function loadDashboard(){
   fetch(BACKEND_URL,{
     method:"POST",
     body:new URLSearchParams({
-      action:"assign",
-      roll:roll,
-      dob:dob
+      action:"dashboard",
+      token:token
     })
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.status==="ASSIGNED"){
-      showResult(res.project,res.team);
-    }else if(res.status==="ALREADY_ASSIGNED"){
-      result.innerHTML="<b>You are already assigned.</b>";
-    }else{
-      result.innerHTML="<b>No projects left.</b>";
+    if(res.status==="NOT_ASSIGNED"){
+      showWheel();
+    } else if(res.status==="ASSIGNED"){
+      showDetails(res.project,res.team);
+    } else {
+      content.innerHTML="<b>Session expired. Please login again.</b>";
     }
   });
 }
 
-function showResult(project,team){
+function showWheel(){
+  content.innerHTML=`
+    <div id="wheelBox">
+      <div id="pointer"></div>
+      <div id="wheel"></div><br>
+      <button onclick="spin()">SPIN & ASSIGN PROJECT</button>
+    </div>
+  `;
+}
 
-  let html = `<h3>Assigned Project: ${project}</h3>`;
-  html += `<div class="team"><b>Team Members:</b><br>`;
+function spin(){
+  const wheel=document.getElementById("wheel");
+  wheel.style.transform=`rotate(${360*6+Math.random()*360}deg)`;
+
+  setTimeout(()=>{
+    fetch(BACKEND_URL,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"assign",
+        token:token
+      })
+    })
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.status==="ASSIGNED"){
+        showDetails(res.project,res.team);
+      }
+    });
+  },4200);
+}
+
+function showDetails(project,team){
+  let html=`<div class="section"><b>Assigned Project:</b><br>${project}</div>`;
+  html+=`<div class="section"><b>Team Members:</b><br>`;
   team.forEach((s,i)=>{
-    html += `${i+1}. ${s.name} (${s.roll})<br>`;
+    html+=`${i+1}. ${s.name} (${s.roll})<br>`;
   });
-  html += `</div>`;
+  html+=`</div>`;
+  content.innerHTML=html;
+}
 
-  result.innerHTML = html;
+function logout(){
+  fetch(BACKEND_URL,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"logout",
+      token:token
+    })
+  })
+  .then(()=>location.href="login.html");
 }
 </script>
 
