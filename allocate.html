@@ -25,7 +25,7 @@ body{
 }
 .header{
   text-align:center;
-  font-size:17px;
+  font-size:16px;
   font-weight:600;
   color:#203a43;
 }
@@ -34,9 +34,6 @@ body{
   font-size:13px;
   color:#666;
   margin-bottom:18px;
-}
-.section{
-  margin-top:18px;
 }
 .info-box{
   background:#f7f9fb;
@@ -56,9 +53,18 @@ body{
   font-size:15px;
   color:#222;
 }
+.status-box{
+  background:#eef2f5;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  font-size:14px;
+  font-weight:600;
+  color:#555;
+}
 #wheel{
   width:220px;height:220px;
-  margin:20px auto;
+  margin:18px auto;
   border-radius:50%;
   border:6px solid #203a43;
   background:conic-gradient(
@@ -85,8 +91,12 @@ button{
   font-weight:600;
   cursor:pointer;
 }
+button:disabled{
+  background:#aaa;
+  cursor:not-allowed;
+}
 .logout{
-  margin-top:25px;
+  margin-top:24px;
   text-align:center;
 }
 .logout button{
@@ -105,13 +115,15 @@ button{
 <body>
 
 <div class="card">
-  <div class="header">Welcome</div>
+  <div id="header" class="header">Loading…</div>
   <div class="sub">Group Discussion & Seminar (ME3273)</div>
 
-  <div id="content"></div>
+  <div id="content" class="status-box">
+    Checking your allocation status…
+  </div>
 
   <div class="logout">
-    <button onclick="logout()">Logout</button>
+    <button id="logoutBtn" onclick="logout()">Logout</button>
   </div>
 
   <div class="footer">
@@ -121,77 +133,81 @@ button{
 </div>
 
 <script>
-/* ================= CONFIG ================= */
 const BACKEND_URL =
 "https://script.google.com/macros/s/AKfycbwBQJCxQHeKTUUpsFTxY1be58UvP0SEfg__Y9vlqMvpRHPOYvll2wDOiMt7VpImbEFIxw/exec";
 
 const token = new URLSearchParams(window.location.search).get("token");
 const content = document.getElementById("content");
+const header  = document.getElementById("header");
+const logoutBtn = document.getElementById("logoutBtn");
 
-/* ================= INIT ================= */
 if(!token){
   content.innerHTML="<b>Invalid session. Please login again.</b>";
 }else{
-  showWheel();        // ALWAYS show wheel first
-  checkAssignment(); // THEN check backend
+  checkStatus();
 }
 
-/* ================= SHOW WHEEL ================= */
+/* -------- CHECK STATUS FIRST -------- */
+function checkStatus(){
+  fetch(BACKEND_URL,{
+    method:"POST",
+    body:new URLSearchParams({ action:"dashboard", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="ASSIGNED"){
+      showAssigned(res.project, res.team, res.name, res.roll, res.complete);
+    }else{
+      showWheel();
+    }
+  })
+  .catch(()=>{
+    content.innerHTML="Unable to load. Please refresh.";
+  });
+}
+
+/* -------- SHOW WHEEL -------- */
 function showWheel(){
+  header.innerText="Welcome!";
   content.innerHTML=`
     <div id="pointer"></div>
     <div id="wheel"></div>
-    <div class="center section">
-      <button onclick="spin()">SPIN & ASSIGN TOPIC</button>
+    <div class="center">
+      <button id="spinBtn" onclick="spin()">Spin the Wheel</button>
     </div>
   `;
 }
 
-/* ================= CHECK ASSIGNMENT ================= */
-function checkAssignment(){
-  fetch(BACKEND_URL,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"dashboard",
-      token:token
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status==="ASSIGNED" && res.project && res.team){
-      showAssigned(res.project, res.team);
-    }
-  })
-  .catch(()=>{});
-}
-
-/* ================= SPIN ================= */
+/* -------- SPIN -------- */
 function spin(){
-  const wheel=document.getElementById("wheel");
-  wheel.style.transform=`rotate(${360*6+Math.random()*360}deg)`;
-  setTimeout(assignTopic,4200);
+  const btn = document.getElementById("spinBtn");
+  btn.disabled = true;
+  content.innerHTML += `<div class="status-box">Allocating topic… Please wait.</div>`;
+
+  document.getElementById("wheel").style.transform =
+    `rotate(${360*6 + Math.random()*360}deg)`;
+
+  setTimeout(assignTopic, 4200);
 }
 
-/* ================= ASSIGN ================= */
+/* -------- ASSIGN -------- */
 function assignTopic(){
   fetch(BACKEND_URL,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"assign",
-      token:token
-    })
+    body:new URLSearchParams({ action:"assign", token })
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.project && res.team){
-      showAssigned(res.project, res.team);
-    }
+    showAssigned(res.project, res.team, "", "", res.complete);
   });
 }
 
-/* ================= SHOW ASSIGNED ================= */
-function showAssigned(topic, team){
-  let html=`
+/* -------- SHOW ASSIGNED -------- */
+function showAssigned(topic, team, name, roll, complete){
+  const me = team[0];
+  header.innerText = `Welcome ${name || me.name} (${roll || me.roll})`;
+
+  let html = `
     <div class="info-box">
       <div class="info-title">Assigned Topic</div>
       <div class="info-content">${topic}</div>
@@ -204,17 +220,27 @@ function showAssigned(topic, team){
       </div>
     </div>
   `;
-  content.innerHTML=html;
+
+  if(!complete){
+    html += `
+      <div class="status-box">
+        A few students haven't spun the wheel yet.
+        Please login later to see full group details.
+      </div>
+    `;
+  }
+
+  content.innerHTML = html;
 }
 
-/* ================= LOGOUT ================= */
+/* -------- LOGOUT -------- */
 function logout(){
+  logoutBtn.disabled = true;
+  content.innerHTML = `<div class="status-box">Logging out… Please wait.</div>`;
+
   fetch(BACKEND_URL,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"logout",
-      token:token
-    })
+    body:new URLSearchParams({ action:"logout", token })
   }).finally(()=>{
     location.href="login.html";
   });
