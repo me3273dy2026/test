@@ -132,61 +132,140 @@ button{
 </div>
 
 <script>
+/* ================= CONFIG ================= */
 const BACKEND_URL =
 "https://script.google.com/macros/s/AKfycbwBQJCxQHeKTUUpsFTxY1be58UvP0SEfg__Y9vlqMvpRHPOYvll2wDOiMt7VpImbEFIxw/exec";
 
-const token=new URLSearchParams(window.location.search).get("token");
-const content=document.getElementById("content");
-const header=document.getElementById("header");
+const token = new URLSearchParams(window.location.search).get("token");
+const content = document.getElementById("content");
+const header  = document.getElementById("header");
 
+/* ================= INIT ================= */
 if(!token){
   content.innerHTML="<b>Invalid session. Please login again.</b>";
-}else loadDashboard();
+} else {
+  loadDashboard();
+}
 
+/* ================= DASHBOARD ================= */
 function loadDashboard(){
   fetch(BACKEND_URL,{
     method:"POST",
-    body:new URLSearchParams({action:"dashboard",token})
+    body:new URLSearchParams({
+      action:"dashboard",
+      token:token
+    })
   })
   .then(r=>r.json())
   .then(res=>{
+    console.log("Dashboard:", res);
+
     if(res.status==="NOT_ASSIGNED"){
       header.innerText="Welcome!";
       showWheel();
-    } else if(res.status==="ASSIGNED"){
-      showDetails(res.name,res.roll,res.project,res.team,res.complete);
-    } else {
-      content.innerHTML="<b>Session expired.</b>";
+      return;
     }
+
+    if(res.status==="ASSIGNED"){
+      showDetails(
+        res.name || "",
+        res.roll || "",
+        res.project,
+        res.team || [],
+        res.complete === false ? false : true
+      );
+      return;
+    }
+
+    content.innerHTML="<b>Session expired. Please login again.</b>";
+  })
+  .catch(()=>{
+    content.innerHTML="<b>Server error. Please refresh.</b>";
   });
 }
 
+/* ================= WHEEL ================= */
 function showWheel(){
   content.innerHTML=`
     <div id="pointer"></div>
     <div id="wheel"></div>
     <div class="center">
       <button onclick="spin()">SPIN & ASSIGN TOPIC</button>
-    </div>`;
+    </div>
+  `;
 }
 
 function spin(){
   const wheel=document.getElementById("wheel");
   wheel.style.transform=\`rotate(\${360*6+Math.random()*360}deg)\`;
-  setTimeout(assign,4200);
+  setTimeout(assignTopic,4200);
 }
 
-function assign(){
+function assignTopic(){
   fetch(BACKEND_URL,{
     method:"POST",
-    body:new URLSearchParams({action:"assign",token})
+    body:new URLSearchParams({
+      action:"assign",
+      token:token
+    })
   })
   .then(r=>r.json())
   .then(res=>{
-    showDetails("", "", res.project, res.team, res.complete);
+    showDetails("", "", res.project, res.team || [], res.complete);
   });
 }
 
-function showDetails(name,roll,topic,team,complete){
-  const me=team[0];
-  header.innerText=\`Welcome \${name||me.name} (\${roll||
+/* ================= DETAILS ================= */
+function showDetails(name, roll, topic, team, complete){
+
+  if(!team || team.length===0){
+    content.innerHTML="<b>Data error. Please refresh.</b>";
+    return;
+  }
+
+  const me = team.find(s => s.roll === roll) || team[0];
+
+  header.innerText = `Welcome ${name || me.name} (${roll || me.roll})`;
+
+  let html = `
+    <div class="info-box">
+      <div class="info-title">Assigned Topic</div>
+      <div class="info-content">${topic}</div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-title">Group Members</div>
+      <div class="info-content members">
+        ${team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>")}
+      </div>
+    </div>
+  `;
+
+  if(complete === false){
+    html += `
+      <div class="status-box">
+        ⏳ A few students haven't spun the wheel yet.
+        Please login later to see full group details.
+      </div>
+    `;
+  }
+
+  content.innerHTML = html;
+}
+
+/* ================= LOGOUT ================= */
+function logout(){
+  fetch(BACKEND_URL,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"logout",
+      token:token
+    })
+  }).then(()=>{
+    location.href="login.html";
+  });
+}
+</script>
+
+</body>
+</html>
