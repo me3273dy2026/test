@@ -63,7 +63,7 @@ button:disabled{background:#999;cursor:not-allowed}
   font-size:13px;color:#e0e0e0;
 }
 
-/* MODAL FIX */
+/* Modal */
 .modal{
   position:fixed;inset:0;background:rgba(0,0,0,.6);
   display:none;justify-content:center;align-items:center;
@@ -93,6 +93,7 @@ textarea{
   <div id="loading">Loading, please wait…</div>
 
   <div id="content" style="display:none">
+
     <div class="countdown">
       ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
     </div>
@@ -152,10 +153,12 @@ function disableAllActions(msg){
 
 /* ---------- INIT ---------- */
 drawWheel();
-loadDashboard();
+loadAll();
 
-/* ---------- DASHBOARD ---------- */
-function loadDashboard(){
+/* ---------- LOAD EVERYTHING ---------- */
+function loadAll(){
+
+  // Dashboard (assignment status)
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({ action:"dashboard", token })
@@ -165,15 +168,29 @@ function loadDashboard(){
     loading.style.display="none";
     content.style.display="block";
 
-    if(res.deadline){
-      startCountdown(res.deadline);
-    }
-
     if(res.status==="ASSIGNED"){
       wheelWrap.style.display="none";
       spinBtn.style.display="none";
       spinMsg.style.display="none";
       showResult(res);
+    }
+  });
+
+  // Seminar metadata (deadline + topic)
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"getSeminarTopic", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.deadline){
+      startCountdown(res.deadline);
+    }
+    if(res.topic){
+      topicInput.value=res.topic;
+    }
+    if(!res.editable){
+      saveBtn.disabled=true;
     }
   });
 }
@@ -224,7 +241,6 @@ function spin(){
     drawWheel();
     if(angle>=stop){
       clearInterval(id);
-
       requestAnimationFrame(()=>{
         status.innerText="Assigning topic, please wait…";
         allocate();
@@ -250,7 +266,7 @@ function allocate(){
 
 /* ---------- RESULT ---------- */
 function showResult(res){
-  let html=`<b>Assigned Topic:</b><br>${res.project}<br><br><b>Group Members:</b><br>`;
+  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
   res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
   if(!res.complete){
     html+=`<div class="red" style="margin-top:8px">
@@ -284,10 +300,13 @@ function saveTopic(){
       topic:topicInput.value
     })
   })
-  .then(()=>{
-    topicStatus.className="status green";
-    topicStatus.innerText="Saved successfully";
-    closeBtn.disabled=false;
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="SAVED"){
+      topicStatus.className="status green";
+      topicStatus.innerText="Saved successfully";
+      closeBtn.disabled=false;
+    }
   });
 }
 
@@ -302,7 +321,7 @@ function logout(){
       }).finally(()=>{
         location.href="login.html";
       });
-    },300);
+    },400);
   });
 }
 </script>
